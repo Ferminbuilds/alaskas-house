@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Alaska's House">
+<title>Alaska's House</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#007aff">
+<style>
+:root {
+  --bg: #f2f2f7; --bg2: #ffffff; --bg3: #e5e5ea; --bg4: #d1d1d6;
+  --label: #000000; --label2: rgba(0,0,0,0.85); --label3: #6c6c70; --label4: #aeaeb2;
+  --sep: rgba(60,60,67,0.12); --sep2: rgba(60,60,67,0.06);
+  --blue: #007aff; --green: #34c759; --orange: #ff9500; --red: #ff3b30;
+  --purple: #af52de; --teal: #5ac8fa; --indigo: #5856d6; --pink: #ff2d55; --yellow: #ffcc00;
+  --nav-bg: rgba(242,242,247,0.92); --tab-bg: rgba(255,255,255,0.92);
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg2: #1c1c1e; --bg3: #2c2c2e; --bg4: #3a3a3c;
+    --label: #ffffff; --label2: rgba(255,255,255,0.9); --label3: rgba(255,255,255,0.55); --label4: rgba(255,255,255,0.3);
+    --sep: rgba(84,84,88,0.6); --sep2: rgba(84,84,88,0.3);
+    --nav-bg: rgba(28,28,30,0.92); --tab-bg: rgba(28,28,30,0.92);
+    --shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--label);overscroll-behavior:none}
+@media (hover:hover) and (pointer:fine){
+  .row:hover{background:var(--bg3)}
+  .filter-pill:hover{background:var(--bg3)}
+  .proj-card:hover{transform:scale(.99)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+@media (prefers-reduced-transparency:reduce){
+  .nav-bar,.tab-bar{background:var(--bg2)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}
+
+/* ── NAV BAR ── */
+.nav-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:.5px solid var(--sep)}
+.nav-inner{display:flex;align-items:flex-end;justify-content:center;padding:calc(env(safe-area-inset-top,44px) + 10px) 16px 10px;position:relative;min-height:calc(env(safe-area-inset-top,44px) + 44px)}
+.nav-title{font-size:17px;font-weight:600;letter-spacing:-.5px;color:var(--label)}
+.nav-btn{position:absolute;right:16px;bottom:10px;width:34px;height:34px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,122,255,.4);transition:transform .15s cubic-bezier(.34,1.56,.64,1),opacity .12s}
+.nav-btn:active{transform:scale(.88);opacity:.85}
+.nav-btn-left{right:auto;left:16px;background:var(--bg3);color:var(--label);box-shadow:none}
+
+/* ── TAB BAR ── */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--tab-bg);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-top:.5px solid var(--sep);display:flex;padding:8px 0 env(safe-area-inset-bottom,20px)}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.tab-item .tab-icon{font-size:22px;line-height:1;transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+.tab-item.active .tab-icon{transform:scale(1.12)}
+.tab-label{font-size:10px;font-weight:500;color:var(--label3);letter-spacing:-.1px;transition:color .15s}
+.tab-item.active .tab-label{color:var(--blue)}
+.tab-badge{position:relative}
+.tab-badge::after{content:attr(data-badge);position:absolute;top:-4px;right:-8px;background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:1px 4px;min-width:14px;text-align:center;display:none}
+.tab-badge[data-badge]:not([data-badge=""]):not([data-badge="0"])::after{display:block}
+
+/* ── SCROLL VIEW ── */
+.page{position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:calc(env(safe-area-inset-top,44px) + 44px);padding-bottom:calc(env(safe-area-inset-bottom,20px) + 68px);display:none;opacity:0;transform:translateY(4px)}
+.page.active{display:block;animation:pageIn .22s cubic-bezier(.25,.46,.45,.94) forwards}
+@keyframes pageIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TYPOGRAPHY ── */
+.large-title{font-size:34px;font-weight:700;letter-spacing:-.8px;padding:8px 16px 4px;line-height:1.1}
+.section-header{font-size:12px;font-weight:600;color:var(--label3);text-transform:uppercase;letter-spacing:.6px;padding:0 4px;margin-bottom:6px}
+
+/* ── CARDS & ROWS ── */
+.section{margin:16px 16px 0}
+.card{background:var(--bg2);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06),0 .5px 1px rgba(0,0,0,.04)}
+.row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:.5px solid var(--sep);min-height:46px;cursor:pointer;transition:background .1s;-webkit-user-select:none;user-select:none}
+.row:last-child{border-bottom:none}
+.row:active{background:var(--bg3)}
+.row-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.row-content{flex:1;min-width:0}
+.row-title{font-size:17px;font-weight:400;color:var(--label);letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-subtitle{font-size:13px;color:var(--label3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.1px}
+.row-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.chevron{color:var(--label4);font-size:15px;font-weight:500;opacity:.6}
+
+/* ── TOGGLE ── */
+.toggle{width:51px;height:31px;background:var(--bg3);border-radius:16px;position:relative;cursor:pointer;transition:background .25s;flex-shrink:0}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:27px;height:27px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.22);transition:transform .28s cubic-bezier(.25,.46,.45,.94)}
+.toggle.on::after{transform:translateX(20px)}
+
+/* ── CHECKBOX ── */
+.cb{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--bg4);background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;cursor:pointer}
+.cb.on{background:var(--blue);border-color:var(--blue)}
+.cb.on::after{content:'✓';color:#fff;font-size:13px;font-weight:700}
+
+/* ── BADGE / TAG ── */
+.badge{background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 7px;min-width:20px;text-align:center}
+.tag{font-size:12px;font-weight:600;border-radius:7px;padding:3px 8px;white-space:nowrap;letter-spacing:-.1px}
+.tag.blue{background:rgba(0,122,255,.12);color:var(--blue)}
+.tag.green{background:rgba(52,199,89,.12);color:var(--green)}
+.tag.orange{background:rgba(255,149,0,.12);color:var(--orange)}
+.tag.red{background:rgba(255,59,48,.12);color:var(--red)}
+.tag.purple{background:rgba(175,82,222,.12);color:var(--purple)}
+.tag.gray{background:rgba(142,142,147,.12);color:var(--label3)}
+.tag.indigo{background:rgba(88,86,214,.12);color:var(--indigo)}
+.tag.pink{background:rgba(255,45,85,.12);color:var(--pink)}
+
+/* ── HERO CARD ── */
+.hero{background:linear-gradient(145deg,#1a56db 0%,#3a86ff 55%,#5e60ce 100%);border-radius:18px;padding:20px 18px 18px;margin:12px 16px 0;color:#fff;box-shadow:0 6px 24px rgba(26,86,219,.38),0 1px 4px rgba(26,86,219,.2)}
+.hero h2{font-size:18px;font-weight:600;letter-spacing:-.3px;opacity:.9}
+.hero p{font-size:13px;opacity:.7;margin-top:2px}
+.hero-stats{display:flex;gap:8px;margin-top:16px}
+.hero-stat{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:12px;padding:12px 8px;flex:1;text-align:center;border:.5px solid rgba(255,255,255,.2)}
+.hero-stat-num{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.hero-stat-label{font-size:10px;opacity:.75;margin-top:2px;letter-spacing:.2px}
+
+/* ── STAT ROW ── */
+.stat-row{display:flex;gap:10px;margin:12px 16px 0}
+.stat-card{background:var(--bg2);border-radius:14px;padding:14px 14px 12px;flex:1;box-shadow:var(--shadow)}
+.stat-num{font-size:28px;font-weight:700;letter-spacing:-.8px;line-height:1}
+.stat-label{font-size:12px;color:var(--label3);margin-top:4px;line-height:1.3}
+
+/* ── PROJECT CARD ── */
+.proj-card{background:var(--bg2);border-radius:16px;margin:0 16px 12px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.06),0 .5px 2px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;transition:transform .15s cubic-bezier(.25,.46,.45,.94),box-shadow .15s}
+.proj-card:active{transform:scale(.975);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.proj-card-body{padding:16px 16px 12px}
+.proj-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.proj-card-title{font-size:17px;font-weight:600;letter-spacing:-.5px;color:var(--label);line-height:1.3}
+.proj-card-meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.proj-card-note{font-size:13px;color:var(--label3);margin-top:6px;line-height:1.45}
+.proj-card-footer{border-top:.5px solid var(--sep2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--bg2)}
+.proj-card-cost{font-size:14px;font-weight:600;color:var(--label);letter-spacing:-.2px}
+.proj-card-date{font-size:12px;color:var(--label3)}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{height:4px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:10px}
+.progress-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.25,.46,.45,.94)}
+
+/* ── FAB ── */
+.fab{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom,20px) + 82px);width:56px;height:56px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px rgba(0,122,255,.45),0 1px 4px rgba(0,122,255,.25);z-index:90;transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .15s}
+.fab:active{transform:scale(.88);box-shadow:0 2px 8px rgba(0,122,255,.3)}
+.fab.hidden{display:none}
+
+/* ── FILTER PILLS ── */
+.filter-bar{display:flex;gap:6px;padding:10px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-pill{background:var(--bg2);border:.5px solid var(--sep);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;color:var(--label3);white-space:nowrap;cursor:pointer;transition:all .2s cubic-bezier(.25,.46,.45,.94);flex-shrink:0}
+.filter-pill:active{opacity:.7;transform:scale(.96)}
+.filter-pill.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(0,122,255,.3)}
+
+/* ── SEARCH ── */
+.search-wrap{padding:6px 16px}
+.search-bar{background:var(--bg3);border-radius:11px;padding:9px 12px;display:flex;align-items:center;gap:8px}
+.search-bar input{background:transparent;border:none;outline:none;font-size:15px;color:var(--label);flex:1;width:100%;letter-spacing:-.2px}
+.search-bar input::placeholder{color:var(--label3)}
+
+/* ── MODAL / SHEET ── */
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:200;display:none;align-items:flex-end;transition:background .25s}
+.sheet-backdrop.open{display:flex;background:rgba(0,0,0,.45)}
+.sheet{background:var(--bg2);border-radius:24px 24px 0 0;width:100%;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,20px);transform:translateY(100%);transition:transform .32s cubic-bezier(.32,0,.67,0)}
+.sheet-backdrop.open .sheet{transform:translateY(0);transition:transform .36s cubic-bezier(.34,1.1,.64,1)}
+.sheet-handle{width:36px;height:4px;background:var(--bg4);border-radius:2px;margin:10px auto 2px}
+.sheet-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 14px;border-bottom:.5px solid var(--sep)}
+.sheet-nav-title{font-size:17px;font-weight:600;color:var(--label);letter-spacing:-.3px}
+.sheet-btn{font-size:16px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;padding:4px;min-width:44px}
+.sheet-btn.red{color:var(--red)}
+
+/* ── FORM ELEMENTS ── */
+.form-section{margin:20px 16px 0}
+.form-label{font-size:12px;font-weight:600;color:var(--label3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;padding-left:4px}
+.form-input{width:100%;background:var(--bg3);border:none;border-radius:11px;padding:13px 14px;font-size:16px;color:var(--label);outline:none;font-family:inherit;transition:background .15s}
+.form-input:focus{background:var(--bg3);outline:2px solid var(--blue);outline-offset:0}
+.form-input::placeholder{color:var(--label4)}
+.form-textarea{width:100%;background:var(--bg3);border:none;border-radius:11px;padding:13px 14px;font-size:16px;color:var(--label);outline:none;font-family:inherit;resize:none;line-height:1.5;transition:background .15s}
+.form-textarea:focus{background:var(--bg3);outline:2px solid var(--blue);outline-offset:0}
+.form-textarea::placeholder{color:var(--label4)}
+.form-row{display:flex;gap:10px}
+.form-row .form-section{flex:1;margin-left:0;margin-right:0}
+.seg-control{display:flex;background:var(--bg3);border-radius:10px;padding:2px;gap:2px}
+.seg-btn{flex:1;padding:7px 4px;background:transparent;border:none;border-radius:8px;font-size:13px;font-weight:500;color:var(--label3);cursor:pointer;transition:all .18s cubic-bezier(.25,.46,.45,.94);text-align:center}
+.seg-btn.active{background:var(--bg2);color:var(--label);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.12),0 .5px 1px rgba(0,0,0,.06)}
+.option-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.option-btn{background:var(--bg3);border:1.5px solid transparent;border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .18s cubic-bezier(.25,.46,.45,.94);font-size:13px;font-weight:500;color:var(--label3)}
+.option-btn:active{transform:scale(.95)}
+.option-btn .opt-icon{font-size:22px;display:block;margin-bottom:5px}
+.option-btn.active{background:rgba(0,122,255,.1);border-color:var(--blue);color:var(--blue)}
+.btn-primary{background:var(--blue);color:#fff;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:600;width:100%;cursor:pointer;letter-spacing:-.4px;font-family:inherit;box-shadow:0 4px 14px rgba(0,122,255,.35);transition:all .15s}
+.btn-primary:active{opacity:.85;transform:scale(.98)}
+.btn-destructive{background:rgba(255,59,48,.1);color:var(--red);border:none;border-radius:14px;padding:15px;font-size:17px;font-weight:600;width:100%;cursor:pointer;font-family:inherit;margin-top:10px;transition:opacity .12s}
+.btn-destructive:active{opacity:.7}
+
+/* ── STATUS STEP ── */
+.status-steps{display:flex;align-items:center;gap:0;padding:4px 0}
+.status-step{flex:1;text-align:center;position:relative}
+.status-step-dot{width:12px;height:12px;border-radius:50%;background:var(--bg4);margin:0 auto 4px;position:relative;z-index:1;transition:background .2s}
+.status-step.done .status-step-dot{background:var(--blue)}
+.status-step.current .status-step-dot{background:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,.2)}
+.status-step-label{font-size:10px;color:var(--label3);font-weight:500}
+.status-step.done .status-step-label,.status-step.current .status-step-label{color:var(--blue);font-weight:600}
+.status-line{position:absolute;top:6px;left:50%;right:-50%;height:2px;background:var(--bg4);z-index:0}
+.status-step.done .status-line{background:var(--blue)}
+.status-step:last-child .status-line{display:none}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:64px 32px;color:var(--label3)}
+.empty-icon{font-size:56px;margin-bottom:14px;opacity:.8}
+.empty-title{font-size:20px;font-weight:600;color:var(--label);margin-bottom:8px;letter-spacing:-.4px}
+.empty-sub{font-size:15px;line-height:1.55;letter-spacing:-.1px}
+
+/* ── APPT CARD ── */
+.appt-card{background:var(--bg2);border-radius:16px;margin:0 16px 12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06),0 .5px 2px rgba(0,0,0,.08);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.appt-card:active{transform:scale(.975)}
+.appt-card-header{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.appt-date-block{background:var(--bg3);border-radius:10px;padding:8px 10px;text-align:center;flex-shrink:0;min-width:48px}
+.appt-date-mo{font-size:10px;font-weight:700;color:var(--label3);text-transform:uppercase;letter-spacing:.5px}
+.appt-date-day{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.1;color:var(--label)}
+.appt-info{flex:1;min-width:0}
+.appt-title{font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--label)}
+.appt-meta{font-size:13px;color:var(--label3);margin-top:2px}
+.appt-card-footer{border-top:.5px solid var(--sep2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.appt-countdown{font-size:12px;font-weight:600;color:var(--blue)}
+.appt-countdown.today{color:var(--orange)}
+.appt-countdown.past{color:var(--label4)}
+/* ── UPCOMING WIDGET ── */
+.upcoming-widget{background:linear-gradient(145deg,var(--blue),#5e60ce);border-radius:16px;margin:12px 16px 0;padding:14px 16px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(0,122,255,.3)}
+.upcoming-widget .uw-date{background:rgba(255,255,255,.18);border-radius:10px;padding:8px 10px;text-align:center;min-width:48px;border:.5px solid rgba(255,255,255,.2)}
+.upcoming-widget .uw-mo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8}
+.upcoming-widget .uw-day{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+.upcoming-widget .uw-info{flex:1}
+.upcoming-widget .uw-label{font-size:11px;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.upcoming-widget .uw-title{font-size:16px;font-weight:600;letter-spacing:-.3px}
+.upcoming-widget .uw-sub{font-size:13px;opacity:.8;margin-top:2px}
+/* ── DOC CARD ── */
+.doc-card{background:var(--bg2);border-radius:14px;margin:0 16px 10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer;transition:transform .12s}
+.doc-card:active{transform:scale(.975)}
+.doc-card-row{display:flex;align-items:center;gap:12px;padding:12px 16px}
+.doc-type-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.doc-info{flex:1;min-width:0}
+.doc-title{font-size:16px;font-weight:600;letter-spacing:-.3px;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-meta{font-size:12px;color:var(--label3);margin-top:2px}
+.doc-expiry-warn{font-size:11px;font-weight:600;color:var(--orange);margin-top:2px}
+.doc-expiry-expired{color:var(--red)}
+/* ── PHOTO STRIP ── */
+.photo-strip{display:flex;gap:10px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.photo-strip::-webkit-scrollbar{display:none}
+.photo-thumb{width:80px;height:80px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer}
+.photo-add{width:80px;height:80px;border-radius:10px;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;border:1.5px dashed var(--bg4);color:var(--label3);font-size:22px;gap:4px}
+
+/* ── INLINE DETAIL ── */
+.detail-row{display:flex;align-items:baseline;justify-content:space-between;padding:11px 0;border-bottom:.5px solid var(--sep2)}
+.detail-row:last-child{border-bottom:none}
+.detail-label{font-size:15px;color:var(--label3)}
+.detail-value{font-size:15px;font-weight:500;color:var(--label);text-align:right;max-width:55%}
+
+/* ── COMING SOON ── */
+.coming-soon{background:var(--bg2);border-radius:16px;margin:16px;padding:32px 20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.coming-soon-icon{font-size:48px;margin-bottom:12px}
+.coming-soon h3{font-size:19px;font-weight:700;margin-bottom:6px;letter-spacing:-.4px}
+.coming-soon p{font-size:14px;color:var(--label3);line-height:1.55;letter-spacing:-.1px}
+.coming-soon-pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+
+/* ── WEEK DOTS ── */
+.week-row{display:flex;gap:6px;padding:12px 16px;justify-content:space-between}
+.week-dot{flex:1;aspect-ratio:1;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--label3);max-width:40px;transition:background .2s,color .2s}
+.week-dot.done{background:var(--blue);color:#fff}
+.week-dot.today{background:var(--bg4);color:var(--label);font-weight:800;ring:.5px solid var(--label4)}
+
+/* ── SEASONAL BANNER ── */
+.season-banner{background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;margin:12px 16px 0;padding:14px 16px;color:#fff;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(217,119,6,.3)}
+.season-banner .icon{font-size:28px;flex-shrink:0}
+.season-banner .text h4{font-size:15px;font-weight:700;letter-spacing:-.2px}
+.season-banner .text p{font-size:13px;opacity:.85;margin-top:2px;line-height:1.4}
+
+/* ── COST BAR ── */
+.cost-compare{padding:0 16px}
+.cost-bar-wrap{margin-top:8px}
+.cost-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--label3);margin-bottom:4px}
+.cost-bar-track{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.cost-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+
+.done-text{text-decoration:line-through;opacity:.5}
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <div class="nav-inner">
+    <span class="nav-title" id="navTitle">Alaska's House</span>
+    <button class="nav-btn" id="navAddBtn" onclick="handleNavAdd()" title="Add">+</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: HOME ═══════════════════════════════════ -->
+<div id="pageHome" class="page active">
+  <div class="large-title" id="homeGreeting">Good morning ☀️</div>
+
+  <div class="hero">
+    <h2>🏡 Alaska's House</h2>
+    <p id="heroSub">Your home at a glance</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num" id="hsDue">0</div><div class="hero-stat-label">Due</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="hsProj">0</div><div class="hero-stat-label">Active</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="hsSpent">$0</div><div class="hero-stat-label">Spent</div></div>
+    </div>
+  </div>
+
+  <!-- Upcoming appointment widget (shown when there's a future appt) -->
+  <div id="upcomingWidget" style="display:none" onclick="switchPage('MyHome')"></div>
+
+  <!-- Seasonal banner -->
+  <div class="season-banner" id="seasonBanner">
+    <div class="icon" id="seasonIcon">🍂</div>
+    <div class="text"><h4 id="seasonTitle">Fall Prep Time</h4><p id="seasonTip">Winterize sprinklers & clean gutters before the first freeze.</p></div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-num" id="dashTasks">0</div><div class="stat-label">Tasks done this month</div></div>
+    <div class="stat-card"><div class="stat-num" id="dashProjects">0</div><div class="stat-label">Projects complete</div></div>
+  </div>
+
+  <!-- Week streak -->
+  <div class="section">
+    <div class="section-header">This Week</div>
+    <div class="card"><div class="week-row" id="weekRow"></div></div>
+  </div>
+
+  <!-- Due soon -->
+  <div class="section">
+    <div class="section-header">Due Soon</div>
+    <div class="card" id="homeDueList"></div>
+  </div>
+
+  <!-- Active projects -->
+  <div class="section" style="margin-bottom:8px">
+    <div class="section-header">Active Projects</div>
+    <div id="homeActiveProjects"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: TASKS ═══════════════════════════════════ -->
+<div id="pageTasks" class="page">
+  <div class="large-title">Tasks</div>
+  <div class="search-wrap">
+    <div class="search-bar"><span style="color:var(--label3)">🔍</span><input type="text" id="taskSearch" placeholder="Search tasks…" oninput="filterTasks(this.value)"></div>
+  </div>
+  <div class="filter-bar" id="taskFilterBar">
+    <div class="filter-pill active" onclick="setTaskFilter('all',this)">All</div>
+    <div class="filter-pill" onclick="setTaskFilter('Monthly',this)">Monthly</div>
+    <div class="filter-pill" onclick="setTaskFilter('Quarterly',this)">Quarterly</div>
+    <div class="filter-pill" onclick="setTaskFilter('Bi-Annual',this)">Bi-Annual</div>
+    <div class="filter-pill" onclick="setTaskFilter('Annual',this)">Annual</div>
+    <div class="filter-pill" onclick="setTaskFilter('Spring',this)">Spring</div>
+    <div class="filter-pill" onclick="setTaskFilter('Fall',this)">Fall</div>
+  </div>
+  <div id="tasksList" style="padding-bottom:8px"></div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: PROJECTS ═══════════════════════════════════ -->
+<div id="pageProjects" class="page">
+  <div class="large-title">Projects</div>
+  <div class="filter-bar" id="projFilterBar">
+    <div class="filter-pill active" onclick="setProjFilter('all',this)">All</div>
+    <div class="filter-pill" onclick="setProjFilter('In Progress',this)">In Progress</div>
+    <div class="filter-pill" onclick="setProjFilter('Planned',this)">Planned</div>
+    <div class="filter-pill" onclick="setProjFilter('Idea',this)">Ideas</div>
+    <div class="filter-pill" onclick="setProjFilter('Complete',this)">Complete</div>
+  </div>
+  <div id="projectsList" style="padding-bottom:8px;margin-top:4px"></div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: MY HOME / RECORDS ═══════════════════════════════════ -->
+<div id="pageMyHome" class="page">
+  <div class="large-title">Records</div>
+
+  <!-- Sub-nav for Records sections -->
+  <div class="filter-bar" id="recordsFilterBar">
+    <div class="filter-pill active" onclick="switchRecordsTab('appointments',this)">📅 Appointments</div>
+    <div class="filter-pill" onclick="switchRecordsTab('vault',this)">📁 Vault</div>
+    <div class="filter-pill" onclick="switchRecordsTab('other',this)">🏠 Home</div>
+  </div>
+
+  <!-- APPOINTMENTS SUB-PAGE -->
+  <div id="recordsAppointments">
+    <div id="apptList" style="padding-bottom:8px;margin-top:8px"></div>
+  </div>
+
+  <!-- VAULT SUB-PAGE -->
+  <div id="recordsVault" style="display:none">
+    <div class="search-wrap" style="margin-top:4px">
+      <div class="search-bar"><span style="color:var(--label3)">🔍</span><input type="text" id="vaultSearch" placeholder="Search documents…" oninput="renderVault(this.value)"></div>
+    </div>
+    <div class="filter-bar" id="vaultFilterBar">
+      <div class="filter-pill active" onclick="setVaultFilter('all',this)">All</div>
+      <div class="filter-pill" onclick="setVaultFilter('Invoice',this)">Invoices</div>
+      <div class="filter-pill" onclick="setVaultFilter('Warranty',this)">Warranties</div>
+      <div class="filter-pill" onclick="setVaultFilter('Manual',this)">Manuals</div>
+      <div class="filter-pill" onclick="setVaultFilter('Receipt',this)">Receipts</div>
+      <div class="filter-pill" onclick="setVaultFilter('Contract',this)">Contracts</div>
+      <div class="filter-pill" onclick="setVaultFilter('Report',this)">Reports</div>
+    </div>
+    <div id="vaultList" style="padding-bottom:8px"></div>
+  </div>
+
+  <!-- OTHER / COMING SOON SUB-PAGE -->
+  <div id="recordsOther" style="display:none">
+    <div class="section" style="margin-top:12px">
+      <div class="section-header">Coming Next</div>
+      <div class="card">
+        <div class="row" style="cursor:default">
+          <div class="row-icon" style="background:rgba(0,122,255,.1)">🚪</div>
+          <div class="row-content"><div class="row-title">Rooms</div><div class="row-subtitle">Organize everything by space</div></div>
+          <div class="row-right"><span class="tag gray">Soon</span></div>
+        </div>
+        <div class="row" style="cursor:default">
+          <div class="row-icon" style="background:rgba(255,149,0,.1)">🔧</div>
+          <div class="row-content"><div class="row-title">Appliances & Systems</div><div class="row-subtitle">Track model, age & service history</div></div>
+          <div class="row-right"><span class="tag gray">Soon</span></div>
+        </div>
+        <div class="row" style="cursor:default">
+          <div class="row-icon" style="background:rgba(52,199,89,.1)">🛒</div>
+          <div class="row-content"><div class="row-title">Supplies</div><div class="row-subtitle">Products, materials & tools</div></div>
+          <div class="row-right"><span class="tag gray">Soon</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: PROFILE ═══════════════════════════════════ -->
+<div id="pageProfile" class="page">
+  <div class="large-title">Profile</div>
+
+  <div class="section" style="margin-top:12px">
+    <div class="section-header">Home Details</div>
+    <div class="card">
+      <div class="row"><div class="row-icon" style="background:rgba(0,122,255,.1)">🏠</div><div class="row-content"><div class="row-title">Home Type</div></div><div class="row-right"><span style="color:var(--label3);font-size:15px" id="pHomeType">Single Family</span><div class="chevron">›</div></div></div>
+      <div class="row"><div class="row-icon" style="background:rgba(52,199,89,.1)">📅</div><div class="row-content"><div class="row-title">Year Built</div></div><div class="row-right"><span style="color:var(--label3);font-size:15px" id="pYearBuilt">—</span><div class="chevron">›</div></div></div>
+      <div class="row"><div class="row-icon" style="background:rgba(255,149,0,.1)">📐</div><div class="row-content"><div class="row-title">Square Footage</div></div><div class="row-right"><span style="color:var(--label3);font-size:15px" id="pSqft">—</span><div class="chevron">›</div></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Financials</div>
+    <div class="card">
+      <div class="row" style="cursor:default"><div class="row-icon" style="background:rgba(52,199,89,.1)">💰</div><div class="row-content"><div class="row-title">Total Spent This Year</div></div><div class="row-right"><span style="font-size:17px;font-weight:600;color:var(--green)" id="totalSpentYear">$0</span></div></div>
+      <div class="row" style="cursor:default"><div class="row-icon" style="background:rgba(0,122,255,.1)">🔨</div><div class="row-content"><div class="row-title">Projects Completed</div></div><div class="row-right"><span style="font-size:17px;font-weight:600" id="totalProjDone">0</span></div></div>
+      <div class="row" style="cursor:default"><div class="row-icon" style="background:rgba(255,149,0,.1)">📋</div><div class="row-content"><div class="row-title">Total Projects Logged</div></div><div class="row-right"><span style="font-size:17px;font-weight:600" id="totalProjAll">0</span></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Notes</div>
+    <div class="card" style="padding:4px 0">
+      <textarea class="form-textarea" id="homeNotes" rows="4" placeholder="Contractors, warranty info, home details…" style="margin:0;border-radius:0;background:transparent;padding:12px 16px"></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">App</div>
+    <div class="card">
+      <div class="row" style="cursor:default"><div class="row-icon" style="background:rgba(175,82,222,.1)">🐾</div><div class="row-content"><div class="row-title">Alaska's House</div><div class="row-subtitle">Version 3.0</div></div></div>
+      <div class="row" onclick="exportData()"><div class="row-icon" style="background:rgba(52,199,89,.1)">💾</div><div class="row-content"><div class="row-title">Export Backup</div><div class="row-subtitle">Download all your data as a JSON file</div></div></div>
+      <div class="row" onclick="importData()"><div class="row-icon" style="background:rgba(0,122,255,.1)">📥</div><div class="row-content"><div class="row-title">Restore from Backup</div><div class="row-subtitle">Import a previously exported JSON file</div></div></div>
+      <div class="row" onclick="resetAllData()"><div class="row-icon" style="background:rgba(255,59,48,.1)">🗑️</div><div class="row-content"><div class="row-title" style="color:var(--red)">Reset All Data</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ TAB BAR ═══════════════════════════════════ -->
+<div class="tab-bar">
+  <div class="tab-item active" id="tbHome" onclick="switchPage('Home')"><div class="tab-icon tab-badge" id="tbHomeBadge">☀️</div><div class="tab-label">Today</div></div>
+  <div class="tab-item" id="tbTasks" onclick="switchPage('Tasks')"><div class="tab-icon tab-badge" id="tbTasksBadge">✅</div><div class="tab-label">Tasks</div></div>
+  <div class="tab-item" id="tbProjects" onclick="switchPage('Projects')"><div class="tab-icon tab-badge" id="tbProjectsBadge">🔨</div><div class="tab-label">Projects</div></div>
+  <div class="tab-item" id="tbMyHome" onclick="switchPage('MyHome')"><div class="tab-icon">📋</div><div class="tab-label">Records</div></div>
+  <div class="tab-item" id="tbProfile" onclick="switchPage('Profile')"><div class="tab-icon">👤</div><div class="tab-label">Profile</div></div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="mainFab" onclick="handleFab()">+</button>
+
+<!-- ═══════════════════════════════════ TASK DETAIL SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="taskSheet" onclick="sheetClose('taskSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('taskSheet')">Done</button>
+      <span class="sheet-nav-title" id="tsTitle">Task</span>
+      <div style="width:44px"></div>
+    </div>
+    <div class="section" style="margin-top:16px">
+      <div class="card">
+        <div class="row" style="cursor:default">
+          <div class="row-icon" id="tsIcon" style="background:rgba(0,122,255,.1)">🔧</div>
+          <div class="row-content"><div class="row-title" id="tsFreq">Monthly</div><div class="row-subtitle" id="tsCat">General</div></div>
+          <div class="row-right"><span class="tag blue" id="tsTag">Monthly</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="form-label">Notes</div>
+      <textarea class="form-textarea" id="tsNotes" rows="3" placeholder="Last service date, contractor, notes…"></textarea>
+    </div>
+    <div class="section">
+      <div class="card">
+        <div class="row" style="cursor:default">
+          <div class="row-content"><div class="row-title">Mark Complete</div></div>
+          <div class="row-right"><div class="toggle" id="tsToggle" onclick="toggleTaskDone()"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="margin-bottom:20px"><button class="btn-primary" onclick="closeSheet('taskSheet')">Done</button></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ ADD/EDIT PROJECT SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="projEditSheet" onclick="sheetClose('projEditSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('projEditSheet')">Cancel</button>
+      <span class="sheet-nav-title" id="peSheetTitle">New Project</span>
+      <button class="sheet-btn" onclick="saveProject()" style="font-weight:700">Save</button>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">Title</div>
+      <input class="form-input" id="peTitle" type="text" placeholder="e.g. Replace water heater">
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">Type</div>
+      <div class="seg-control" id="peTypeSeg">
+        <button class="seg-btn active" onclick="setSeg('peTypeSeg',this,'Repair')">Repair</button>
+        <button class="seg-btn" onclick="setSeg('peTypeSeg',this,'Improvement')">Improve</button>
+        <button class="seg-btn" onclick="setSeg('peTypeSeg',this,'Upgrade')">Upgrade</button>
+        <button class="seg-btn" onclick="setSeg('peTypeSeg',this,'Idea')">Idea</button>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">Category</div>
+      <div class="option-grid" id="peCatGrid"></div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">Status</div>
+      <div class="seg-control" id="peStatusSeg">
+        <button class="seg-btn active" onclick="setSeg('peStatusSeg',this,'Idea')">Idea</button>
+        <button class="seg-btn" onclick="setSeg('peStatusSeg',this,'Planned')">Planned</button>
+        <button class="seg-btn" onclick="setSeg('peStatusSeg',this,'In Progress')">Active</button>
+        <button class="seg-btn" onclick="setSeg('peStatusSeg',this,'Complete')">Done</button>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">Priority</div>
+      <div class="seg-control" id="pePriSeg">
+        <button class="seg-btn active" onclick="setSeg('pePriSeg',this,'Normal')">Normal</button>
+        <button class="seg-btn" onclick="setSeg('pePriSeg',this,'Low')">Low</button>
+        <button class="seg-btn" onclick="setSeg('pePriSeg',this,'Urgent')">Urgent</button>
+        <button class="seg-btn" onclick="setSeg('pePriSeg',this,'Safety')">Safety</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-section"><div class="form-label">Est. Cost</div><input class="form-input" id="peEstCost" type="number" inputmode="decimal" placeholder="$0"></div>
+      <div class="form-section"><div class="form-label">Actual Cost</div><input class="form-input" id="peActCost" type="number" inputmode="decimal" placeholder="$0"></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-section"><div class="form-label">Date Started</div><input class="form-input" id="peStartDate" type="date"></div>
+      <div class="form-section"><div class="form-label">Completed</div><input class="form-input" id="peEndDate" type="date"></div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">Contractor / Who Did It</div>
+      <input class="form-input" id="peContractor" type="text" placeholder="Name or company">
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">Notes</div>
+      <textarea class="form-textarea" id="peNotes" rows="4" placeholder="Details, lessons learned, what worked…"></textarea>
+    </div>
+
+    <div class="form-section" id="peDeleteWrap" style="display:none;margin-bottom:24px">
+      <button class="btn-destructive" onclick="deleteProject()">Delete Project</button>
+    </div>
+    <div class="form-section" style="margin-bottom:24px" id="peSaveBtn">
+      <button class="btn-primary" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ ADD/EDIT APPOINTMENT SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="apptEditSheet" onclick="sheetClose('apptEditSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('apptEditSheet')">Cancel</button>
+      <span class="sheet-nav-title" id="aeSheetTitle">New Appointment</span>
+      <button class="sheet-btn" onclick="saveAppt()" style="font-weight:700">Save</button>
+    </div>
+    <div class="form-section">
+      <div class="form-label">Title</div>
+      <input class="form-input" id="aeTitle" type="text" placeholder="e.g. HVAC tune-up, Roof inspection">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Type</div>
+      <div class="seg-control" id="aeTypeSeg">
+        <button class="seg-btn active" onclick="setSeg('aeTypeSeg',this,'Service')" data-val="Service">Service</button>
+        <button class="seg-btn" onclick="setSeg('aeTypeSeg',this,'Repair')" data-val="Repair">Repair</button>
+        <button class="seg-btn" onclick="setSeg('aeTypeSeg',this,'Inspection')" data-val="Inspection">Inspect</button>
+        <button class="seg-btn" onclick="setSeg('aeTypeSeg',this,'Delivery')" data-val="Delivery">Delivery</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-section">
+        <div class="form-label">Date</div>
+        <input class="form-input" id="aeDate" type="date">
+      </div>
+      <div class="form-section">
+        <div class="form-label">Time</div>
+        <input class="form-input" id="aeTime" type="time">
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="form-label">Who / Company</div>
+      <input class="form-input" id="aeWho" type="text" placeholder="e.g. ABC HVAC, John Smith">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Phone (optional)</div>
+      <input class="form-input" id="aePhone" type="tel" placeholder="555-867-5309">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Related to (optional)</div>
+      <input class="form-input" id="aeLinked" type="text" placeholder="e.g. Furnace, Kitchen remodel…">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Pre-visit notes</div>
+      <textarea class="form-textarea" id="aeNotes" rows="3" placeholder="Questions to ask, things to prepare…"></textarea>
+    </div>
+    <div class="form-section" id="aeDeleteWrap" style="display:none">
+      <button class="btn-destructive" onclick="deleteAppt()">Delete Appointment</button>
+    </div>
+    <div class="form-section" style="margin-bottom:24px">
+      <button class="btn-primary" onclick="saveAppt()">Save Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ APPOINTMENT DETAIL SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="apptDetailSheet" onclick="sheetClose('apptDetailSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('apptDetailSheet')">Close</button>
+      <span class="sheet-nav-title" id="adTitle">Appointment</span>
+      <button class="sheet-btn" onclick="editCurrentAppt()">Edit</button>
+    </div>
+    <div style="padding:16px">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+        <span class="tag blue" id="adTypeTag">Service</span>
+        <span class="tag" id="adStatusTag">Upcoming</span>
+      </div>
+      <div class="card" style="padding:0 16px">
+        <div id="adDetailRows"></div>
+      </div>
+    </div>
+    <div class="section" id="adNotesSection">
+      <div class="section-header">Pre-visit Notes</div>
+      <div class="card" style="padding:14px 16px">
+        <p id="adNotes" style="font-size:15px;line-height:1.5;color:var(--label)"></p>
+      </div>
+    </div>
+    <div class="section" style="margin-bottom:24px">
+      <button class="btn-primary" id="adCalBtn" onclick="addApptToCalendar()">Add to Apple Calendar</button>
+    </div>
+    <div class="section" id="adCompleteSection" style="margin-bottom:24px">
+      <button class="btn-destructive" style="background:rgba(52,199,89,.1);color:var(--green)" onclick="markApptComplete()">Mark as Complete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ ADD/EDIT VAULT DOC SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="vaultEditSheet" onclick="sheetClose('vaultEditSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('vaultEditSheet')">Cancel</button>
+      <span class="sheet-nav-title" id="veSheetTitle">Add Document</span>
+      <button class="sheet-btn" onclick="saveDoc()" style="font-weight:700">Save</button>
+    </div>
+    <div class="form-section">
+      <div class="form-label">Document Name</div>
+      <input class="form-input" id="veTitle" type="text" placeholder="e.g. HVAC Warranty, Roof Inspection Report">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Type</div>
+      <div class="option-grid" id="veTypeGrid"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-section">
+        <div class="form-label">Date</div>
+        <input class="form-input" id="veDate" type="date">
+      </div>
+      <div class="form-section">
+        <div class="form-label">Expires</div>
+        <input class="form-input" id="veExpiry" type="date">
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="form-label">Vendor / Contractor</div>
+      <input class="form-input" id="veVendor" type="text" placeholder="e.g. ABC HVAC, Home Depot">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Amount (if applicable)</div>
+      <input class="form-input" id="veAmount" type="number" placeholder="0.00" step="0.01">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Related to (optional)</div>
+      <input class="form-input" id="veLinked" type="text" placeholder="e.g. Furnace, Roof replacement project…">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Notes / Key Details</div>
+      <textarea class="form-textarea" id="veNotes" rows="3" placeholder="Paste key info here — makes this doc searchable. Model numbers, warranty terms, work performed…"></textarea>
+    </div>
+    <div class="form-section" id="veDeleteWrap" style="display:none">
+      <button class="btn-destructive" onclick="deleteDoc()">Delete Document</button>
+    </div>
+    <div class="form-section" style="margin-bottom:24px">
+      <button class="btn-primary" onclick="saveDoc()">Save Document</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ VAULT DETAIL SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="vaultDetailSheet" onclick="sheetClose('vaultDetailSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('vaultDetailSheet')">Close</button>
+      <span class="sheet-nav-title" id="vdTitle">Document</span>
+      <button class="sheet-btn" onclick="editCurrentDoc()">Edit</button>
+    </div>
+    <div style="padding:16px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+        <span class="tag purple" id="vdTypeTag">Invoice</span>
+        <span id="vdExpiryTag"></span>
+      </div>
+      <div class="card" style="padding:0 16px">
+        <div id="vdDetailRows"></div>
+      </div>
+    </div>
+    <div class="section" id="vdNotesSection">
+      <div class="section-header">Notes & Key Details</div>
+      <div class="card" style="padding:14px 16px">
+        <p id="vdNotes" style="font-size:15px;line-height:1.55;color:var(--label);white-space:pre-wrap"></p>
+      </div>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PROJECT DETAIL SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="projDetailSheet" onclick="sheetClose('projDetailSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('projDetailSheet')">Close</button>
+      <span class="sheet-nav-title" id="pdTitle">Project</span>
+      <button class="sheet-btn" onclick="editCurrentProject()">Edit</button>
+    </div>
+    <div style="padding:16px 16px 0">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <span class="tag" id="pdTypTag">Repair</span>
+        <span class="tag" id="pdStatusTag">In Progress</span>
+        <span class="tag" id="pdPriTag">Normal</span>
+      </div>
+      <!-- Status steps -->
+      <div class="card" style="padding:14px 16px">
+        <div class="status-steps" id="pdStatusSteps"></div>
+      </div>
+    </div>
+    <!-- Cost bars -->
+    <div class="section" id="pdCostSection">
+      <div class="section-header">Cost</div>
+      <div class="card" style="padding:14px 16px">
+        <div id="pdCostBars"></div>
+      </div>
+    </div>
+    <!-- Details -->
+    <div class="section">
+      <div class="section-header">Details</div>
+      <div class="card" style="padding:0 16px">
+        <div id="pdDetailRows"></div>
+      </div>
+    </div>
+    <!-- Notes -->
+    <div class="section" id="pdNotesSection">
+      <div class="section-header">Notes</div>
+      <div class="card" style="padding:14px 16px">
+        <p id="pdNotes" style="font-size:15px;line-height:1.5;color:var(--label)"></p>
+      </div>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// TASKS DATA
+// ══════════════════════════════════════════════════════
+const TASKS = [
+  {id:1,title:'Replace HVAC Air Filter',freq:'Monthly',cat:'HVAC',icon:'🌬️',color:'rgba(0,122,255,.1)'},
+  {id:2,title:'Test Smoke & CO Detectors',freq:'Monthly',cat:'Safety',icon:'🔥',color:'rgba(255,59,48,.1)'},
+  {id:3,title:'Check Water Softener Salt',freq:'Monthly',cat:'Plumbing',icon:'💧',color:'rgba(90,200,250,.1)'},
+  {id:4,title:'Clean Range Hood Filter',freq:'Monthly',cat:'Kitchen',icon:'🍳',color:'rgba(255,149,0,.1)'},
+  {id:5,title:'Run Water in Unused Drains',freq:'Monthly',cat:'Plumbing',icon:'🚿',color:'rgba(90,200,250,.1)'},
+  {id:6,title:'Inspect Fire Extinguishers',freq:'Monthly',cat:'Safety',icon:'🧯',color:'rgba(255,59,48,.1)'},
+  {id:7,title:'Clean Garbage Disposal',freq:'Monthly',cat:'Kitchen',icon:'🌀',color:'rgba(255,149,0,.1)'},
+  {id:8,title:'Check Sump Pump',freq:'Monthly',cat:'Plumbing',icon:'💦',color:'rgba(90,200,250,.1)'},
+  {id:9,title:'Deep Clean Refrigerator Coils',freq:'Quarterly',cat:'Appliances',icon:'❄️',color:'rgba(90,200,250,.1)'},
+  {id:10,title:'Inspect Weatherstripping',freq:'Quarterly',cat:'Exterior',icon:'🚪',color:'rgba(52,199,89,.1)'},
+  {id:11,title:'Flush Water Heater Sediment',freq:'Quarterly',cat:'Plumbing',icon:'🔥',color:'rgba(255,59,48,.1)'},
+  {id:12,title:'Test GFCI Outlets',freq:'Quarterly',cat:'Electrical',icon:'⚡',color:'rgba(255,204,0,.1)'},
+  {id:13,title:'Inspect Caulking (Bath/Kitchen)',freq:'Quarterly',cat:'Interior',icon:'🛁',color:'rgba(175,82,222,.1)'},
+  {id:14,title:'Clean Dryer Vent',freq:'Quarterly',cat:'Appliances',icon:'👕',color:'rgba(52,199,89,.1)'},
+  {id:15,title:'Inspect Attic for Leaks/Pests',freq:'Quarterly',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)'},
+  {id:16,title:'Check Window/Door Seals',freq:'Quarterly',cat:'Exterior',icon:'🪟',color:'rgba(52,199,89,.1)'},
+  {id:17,title:'Service HVAC System',freq:'Bi-Annual',cat:'HVAC',icon:'❄️',color:'rgba(0,122,255,.1)'},
+  {id:18,title:'Replace Smoke Detector Batteries',freq:'Bi-Annual',cat:'Safety',icon:'🔋',color:'rgba(255,59,48,.1)'},
+  {id:19,title:'Inspect Roof & Gutters',freq:'Bi-Annual',cat:'Exterior',icon:'🏠',color:'rgba(52,199,89,.1)'},
+  {id:20,title:'Deep Clean Oven',freq:'Bi-Annual',cat:'Appliances',icon:'🍕',color:'rgba(255,149,0,.1)'},
+  {id:21,title:'Inspect Foundation',freq:'Bi-Annual',cat:'Structural',icon:'🧱',color:'rgba(134,97,67,.1)'},
+  {id:22,title:'Flush Outdoor Hose Bibs',freq:'Bi-Annual',cat:'Plumbing',icon:'🚰',color:'rgba(90,200,250,.1)'},
+  {id:23,title:'Check Electrical Panel',freq:'Bi-Annual',cat:'Electrical',icon:'⚡',color:'rgba(255,204,0,.1)'},
+  {id:24,title:'Clean Window Tracks',freq:'Bi-Annual',cat:'Interior',icon:'🪟',color:'rgba(175,82,222,.1)'},
+  {id:25,title:'Chimney Inspection & Cleaning',freq:'Annual',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)'},
+  {id:26,title:'Pressure Wash Exterior',freq:'Annual',cat:'Exterior',icon:'🚿',color:'rgba(52,199,89,.1)'},
+  {id:27,title:'Inspect & Seal Driveway',freq:'Annual',cat:'Exterior',icon:'🛣️',color:'rgba(52,199,89,.1)'},
+  {id:28,title:'Service Lawn Mower',freq:'Annual',cat:'Yard',icon:'🌿',color:'rgba(52,199,89,.1)'},
+  {id:29,title:'Inspect Sprinkler System',freq:'Annual',cat:'Yard',icon:'💦',color:'rgba(90,200,250,.1)'},
+  {id:30,title:'Check Crawl Space',freq:'Annual',cat:'Structural',icon:'🔦',color:'rgba(134,97,67,.1)'},
+  {id:31,title:'Drain & Winterize Irrigation',freq:'Annual',cat:'Yard',icon:'❄️',color:'rgba(90,200,250,.1)'},
+  {id:32,title:'Replace Refrigerator Water Filter',freq:'Annual',cat:'Appliances',icon:'💧',color:'rgba(90,200,250,.1)'},
+  {id:33,title:'Inspect Deck/Patio',freq:'Annual',cat:'Exterior',icon:'🪵',color:'rgba(52,199,89,.1)'},
+  {id:34,title:'Test Garage Door Safety',freq:'Annual',cat:'Safety',icon:'🚗',color:'rgba(255,59,48,.1)'},
+  {id:35,title:'Clean Dishwasher Filter',freq:'Annual',cat:'Appliances',icon:'🍽️',color:'rgba(0,122,255,.1)'},
+  {id:36,title:'Inspect Siding for Damage',freq:'Annual',cat:'Exterior',icon:'🏠',color:'rgba(52,199,89,.1)'},
+  {id:37,title:'Pest Inspection',freq:'Annual',cat:'Safety',icon:'🐛',color:'rgba(255,59,48,.1)'},
+  {id:38,title:'Water Heater Inspection',freq:'Annual',cat:'Plumbing',icon:'🔥',color:'rgba(255,59,48,.1)'},
+  {id:39,title:'Check AC Before Summer',freq:'Spring',cat:'HVAC',icon:'❄️',color:'rgba(0,122,255,.1)'},
+  {id:40,title:'Inspect Roof After Winter',freq:'Spring',cat:'Exterior',icon:'☂️',color:'rgba(52,199,89,.1)'},
+  {id:41,title:'Clean & Inspect Gutters',freq:'Spring',cat:'Exterior',icon:'🌧️',color:'rgba(52,199,89,.1)'},
+  {id:42,title:'Aerate & Fertilize Lawn',freq:'Spring',cat:'Yard',icon:'🌱',color:'rgba(52,199,89,.1)'},
+  {id:43,title:'Trim Trees Away from House',freq:'Spring',cat:'Yard',icon:'🌳',color:'rgba(52,199,89,.1)'},
+  {id:44,title:'Wash Windows Inside & Out',freq:'Spring',cat:'Interior',icon:'🪟',color:'rgba(175,82,222,.1)'},
+  {id:45,title:'Deep Clean Entire Home',freq:'Spring',cat:'Interior',icon:'✨',color:'rgba(175,82,222,.1)'},
+  {id:46,title:'Check Sump Pump Before Rain',freq:'Spring',cat:'Plumbing',icon:'💦',color:'rgba(90,200,250,.1)'},
+  {id:47,title:'Check Heating Before Winter',freq:'Fall',cat:'HVAC',icon:'🌡️',color:'rgba(0,122,255,.1)'},
+  {id:48,title:'Clean & Store Outdoor Furniture',freq:'Fall',cat:'Yard',icon:'🪑',color:'rgba(52,199,89,.1)'},
+  {id:49,title:'Winterize Sprinklers',freq:'Fall',cat:'Yard',icon:'❄️',color:'rgba(52,199,89,.1)'},
+  {id:50,title:'Stock Emergency Supplies',freq:'Fall',cat:'Safety',icon:'🧰',color:'rgba(255,59,48,.1)'},
+  {id:51,title:'Seal Gaps & Cracks (Exterior)',freq:'Fall',cat:'Exterior',icon:'🔧',color:'rgba(52,199,89,.1)'},
+  {id:52,title:'Drain & Store Garden Hoses',freq:'Fall',cat:'Yard',icon:'🌿',color:'rgba(52,199,89,.1)'},
+  {id:53,title:'Inspect Chimney Before Use',freq:'Fall',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)'},
+  {id:54,title:'Clean Gutters After Leaves Fall',freq:'Fall',cat:'Exterior',icon:'🍂',color:'rgba(52,199,89,.1)'},
+  {id:55,title:'Unclog Drains',freq:'As Needed',cat:'Plumbing',icon:'🚰',color:'rgba(90,200,250,.1)'},
+  {id:56,title:'Repair Drywall',freq:'As Needed',cat:'Interior',icon:'🪣',color:'rgba(175,82,222,.1)'},
+  {id:57,title:'Re-caulk Tub/Shower',freq:'As Needed',cat:'Interior',icon:'🛁',color:'rgba(175,82,222,.1)'},
+  {id:58,title:'Touch Up Paint',freq:'As Needed',cat:'Interior',icon:'🖌️',color:'rgba(175,82,222,.1)'},
+  {id:59,title:'Pest Treatment',freq:'As Needed',cat:'Safety',icon:'🐜',color:'rgba(255,59,48,.1)'},
+];
+
+const FREQ_ORDER = ['Monthly','Quarterly','Bi-Annual','Annual','Spring','Fall','As Needed'];
+const FREQ_COLOR = {Monthly:'blue',Quarterly:'orange','Bi-Annual':'purple',Annual:'green',Spring:'green',Fall:'orange','As Needed':'red'};
+
+const PROJ_CATS = [
+  {id:'Plumbing',icon:'💧'},  {id:'Electrical',icon:'⚡'}, {id:'HVAC',icon:'❄️'},
+  {id:'Kitchen',icon:'🍳'},   {id:'Bathroom',icon:'🛁'},   {id:'Roofing',icon:'🏠'},
+  {id:'Yard',icon:'🌿'},      {id:'Flooring',icon:'🪵'},   {id:'Painting',icon:'🖌️'},
+  {id:'Structural',icon:'🧱'},{id:'Appliances',icon:'🔌'}, {id:'Other',icon:'🔧'},
+];
+
+const STATUS_STEPS = ['Idea','Planned','In Progress','Complete'];
+const STATUS_COLOR = {'Idea':'gray','Planned':'blue','In Progress':'orange','Complete':'green'};
+const TYPE_COLOR = {'Repair':'red','Improvement':'blue','Upgrade':'purple','Idea':'gray'};
+const PRI_COLOR = {'Low':'gray','Normal':'blue','Urgent':'orange','Safety':'red'};
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let S = {taskDone:{}, taskNotes:{}, projects:[], appointments:[], docs:[], homeNotes:'', curTaskId:null, curProjId:null, curApptId:null, curDocId:null, projFilter:'all', taskFilter:'all'};
+
+// ── Schema versioning ──────────────────────────────────
+const STORAGE_KEY = 'alaskaHouseV2';
+const SCHEMA_VERSION = 3;
+
+function migrateData(data){
+  const v = data.__schemaVersion || 1;
+  // v1→v2: added appointments, docs
+  if(v < 2){ data.appointments = data.appointments || []; data.docs = data.docs || []; }
+  // v2→v3: added rooms, appliances, schedules, budget, photos
+  if(v < 3){ data.rooms = data.rooms || []; data.appliances = data.appliances || []; data.schedules = data.schedules || []; data.homeProfile = data.homeProfile || {}; }
+  data.__schemaVersion = SCHEMA_VERSION;
+  return data;
+}
+
+function loadS(){
+  try{
+    const d = localStorage.getItem(STORAGE_KEY);
+    if(d){ const p = migrateData(JSON.parse(d)); S = {...S, ...p}; }
+  }catch(e){ console.warn('loadS error',e); }
+}
+
+function saveS(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({...S, __schemaVersion: SCHEMA_VERSION}));
+  }catch(e){ console.warn('saveS error',e); }
+}
+
+// ── Export / Import / Backup ────────────────────────────
+function exportData(){
+  const payload = JSON.stringify({...S, __schemaVersion: SCHEMA_VERSION, __exportedAt: new Date().toISOString()}, null, 2);
+  const blob = new Blob([payload], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url; a.download = `alaskas-house-backup-${date}.json`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded ✓');
+}
+
+function importData(){
+  const input = document.createElement('input');
+  input.type='file'; input.accept='.json,application/json';
+  input.onchange = e => {
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try{
+        const parsed = JSON.parse(ev.target.result);
+        if(!parsed.__schemaVersion) throw new Error('Not a valid backup file');
+        if(!confirm('This will replace all current data with the backup. Continue?')) return;
+        const migrated = migrateData(parsed);
+        S = {...S, ...migrated};
+        saveS(); switchPage('Home');
+        showToast('Data restored ✓');
+      }catch(err){ alert('Could not read backup file: '+err.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function showToast(msg){
+  let t = document.getElementById('toastEl');
+  if(!t){ t=document.createElement('div'); t.id='toastEl';
+    t.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:500;z-index:9999;pointer-events:none;transition:opacity .3s';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._timer); t._timer=setTimeout(()=>t.style.opacity='0',2200);
+}
+
+// ══════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════
+let curPage = 'Home';
+const PAGE_TITLES = {Home:"Today", Tasks:'Tasks', Projects:'Projects', MyHome:'Records', Profile:'Profile'};
+
+let curRecordsTab = 'appointments';
+
+function switchPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page'+p).classList.add('active');
+  document.getElementById('tb'+p).classList.add('active');
+  document.getElementById('navTitle').textContent = p==='Home' ? "Alaska's House" : PAGE_TITLES[p];
+  curPage = p;
+  const showAdd = ['Tasks','Projects','MyHome'].includes(p);
+  document.getElementById('navAddBtn').style.display = showAdd ? 'flex' : 'none';
+  document.getElementById('mainFab').className = 'fab' + (['Tasks','Projects','MyHome'].includes(p) ? '' : ' hidden');
+  if(p==='Home') refreshHome();
+  if(p==='Tasks') renderTasks();
+  if(p==='Projects') renderProjects();
+  if(p==='MyHome') { renderAppts(); renderVault(''); }
+  if(p==='Profile') refreshProfile();
+}
+
+function handleNavAdd(){
+  if(curPage==='Tasks') return;
+  if(curPage==='Projects') openNewProject();
+  if(curPage==='MyHome'){
+    if(curRecordsTab==='appointments') openNewAppt();
+    else if(curRecordsTab==='vault') openNewDoc();
+  }
+}
+function handleFab(){
+  if(curPage==='Tasks') return;
+  if(curPage==='Projects') openNewProject();
+  if(curPage==='MyHome'){
+    if(curRecordsTab==='appointments') openNewAppt();
+    else if(curRecordsTab==='vault') openNewDoc();
+  }
+}
+
+function switchRecordsTab(tab, el){
+  curRecordsTab = tab;
+  document.querySelectorAll('#recordsFilterBar .filter-pill').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('recordsAppointments').style.display = tab==='appointments' ? '' : 'none';
+  document.getElementById('recordsVault').style.display = tab==='vault' ? '' : 'none';
+  document.getElementById('recordsOther').style.display = tab==='other' ? '' : 'none';
+  if(tab==='appointments') renderAppts();
+  if(tab==='vault') renderVault('');
+}
+
+// ══════════════════════════════════════════════════════
+// SHEETS
+// ══════════════════════════════════════════════════════
+function openSheet(id){document.getElementById(id).classList.add('open');}
+function closeSheet(id){document.getElementById(id).classList.remove('open');}
+function sheetClose(id,e){if(e.target===document.getElementById(id))closeSheet(id);}
+
+// ══════════════════════════════════════════════════════
+// HOME DASHBOARD
+// ══════════════════════════════════════════════════════
+function refreshHome(){
+  const hr = new Date().getHours();
+  const greet = hr<12?'Good morning ☀️':hr<17?'Good afternoon 🌤':'Good evening 🌙';
+  document.getElementById('homeGreeting').textContent = greet;
+
+  const due = TASKS.filter(t=>['Monthly','Quarterly'].includes(t.freq)&&!S.taskDone[t.id]);
+  document.getElementById('hsDue').textContent = due.length;
+
+  const active = S.projects.filter(p=>p.status==='In Progress').length;
+  document.getElementById('hsProj').textContent = active;
+
+  const thisYear = new Date().getFullYear();
+  const spent = S.projects.reduce((s,p)=>s+(parseFloat(p.actCost)||0),0);
+  document.getElementById('hsSpent').textContent = '$'+Math.round(spent).toLocaleString();
+
+  const done = Object.values(S.taskDone).filter(Boolean).length;
+  const projDone = S.projects.filter(p=>p.status==='Complete').length;
+  document.getElementById('dashTasks').textContent = done;
+  document.getElementById('dashProjects').textContent = projDone;
+
+  // season banner
+  const mo = new Date().getMonth();
+  const seasons = [
+    {icon:'❄️',title:'Winter Maintenance',tip:'Check heating system & inspect pipes for freezing.'},
+    {icon:'❄️',title:'Late Winter Check',tip:'Test sump pump before spring thaw arrives.'},
+    {icon:'🌱',title:'Spring Is Coming',tip:'Schedule HVAC service & inspect roof after winter.'},
+    {icon:'🌸',title:'Spring Prep',tip:'Aerate the lawn and flush your water heater.'},
+    {icon:'🌸',title:'Spring Cleaning',tip:'Deep clean, wash windows, and check gutters.'},
+    {icon:'☀️',title:'Summer Ready',tip:'Check AC, test sprinklers & inspect the deck.'},
+    {icon:'☀️',title:'Midsummer',tip:'Check for pest activity and trim trees near the house.'},
+    {icon:'☀️',title:'Late Summer',tip:'Seal any exterior cracks before fall arrives.'},
+    {icon:'🍂',title:'Fall Prep Time',tip:'Winterize sprinklers & clean gutters before the freeze.'},
+    {icon:'🍂',title:'Fall Checklist',tip:'Service the furnace and stock emergency supplies.'},
+    {icon:'🍂',title:'Late Fall',tip:'Drain garden hoses and inspect the chimney.'},
+    {icon:'❄️',title:'Winter Ready',tip:'Replace air filter and check smoke detector batteries.'},
+  ];
+  const s = seasons[mo];
+  document.getElementById('seasonIcon').textContent = s.icon;
+  document.getElementById('seasonTitle').textContent = s.title;
+  document.getElementById('seasonTip').textContent = s.tip;
+
+  // week streak
+  const wr = document.getElementById('weekRow');
+  wr.innerHTML = '';
+  const days=['M','T','W','T','F','S','S'];
+  const today=new Date().getDay();
+  days.forEach((d,i)=>{
+    const div=document.createElement('div');
+    const past = i < ((today===0?7:today)-1);
+    div.className='week-dot'+(past?' done':'')+(i===(today===0?6:today-1)?' today':'');
+    div.textContent=d;
+    wr.appendChild(div);
+  });
+
+  // upcoming appointment widget
+  const uw = document.getElementById('upcomingWidget');
+  const now = new Date();
+  const upcomingAppts = (S.appointments||[])
+    .filter(a=>a.status!=='Complete' && a.date && new Date(a.date+'T'+(a.time||'00:00'))>=now)
+    .sort((a,b)=>new Date(a.date+'T'+(a.time||'00:00'))-new Date(b.date+'T'+(b.time||'00:00')));
+  if(upcomingAppts.length){
+    const next = upcomingAppts[0];
+    const nd = new Date(next.date+'T12:00:00');
+    const mo = nd.toLocaleDateString('en-US',{month:'short'}).toUpperCase();
+    const day = nd.getDate();
+    const diffDays = Math.ceil((new Date(next.date+'T00:00:00')-new Date(now.toDateString()))/86400000);
+    const when = diffDays===0?'Today'+(next.time?' · '+fmtTime(next.time):''):diffDays===1?'Tomorrow'+(next.time?' · '+fmtTime(next.time):''):`In ${diffDays} days`+(next.time?' · '+fmtTime(next.time):'');
+    uw.innerHTML=`<div class="upcoming-widget"><div class="uw-date"><div class="uw-mo">${mo}</div><div class="uw-day">${day}</div></div><div class="uw-info"><div class="uw-label">Upcoming Appointment</div><div class="uw-title">${next.title}</div><div class="uw-sub">${when}${next.who?' · '+next.who:''}</div></div><div style="font-size:20px;opacity:.7">›</div></div>`;
+    uw.style.display='block';
+    uw.onclick=()=>{switchPage('MyHome');setTimeout(()=>openApptDetail(next.id),300);};
+  } else {
+    uw.style.display='none';
+  }
+
+  // due soon list
+  const dl = document.getElementById('homeDueList');
+  dl.innerHTML='';
+  due.slice(0,4).forEach(t=>dl.appendChild(buildTaskRow(t,true)));
+  if(!due.length) dl.innerHTML='<div class="row" style="cursor:default"><div class="row-content"><div class="row-title" style="color:var(--label3)">🎉 All caught up!</div></div></div>';
+
+  // active projects
+  const ap = document.getElementById('homeActiveProjects');
+  ap.innerHTML='';
+  const actProj = S.projects.filter(p=>p.status==='In Progress').slice(0,3);
+  if(!actProj.length){
+    ap.innerHTML='<div class="card" style="margin:0 16px"><div class="row" style="cursor:default"><div class="row-content"><div class="row-title" style="color:var(--label3)">No active projects</div></div></div></div>';
+  } else {
+    actProj.forEach(p=>ap.appendChild(buildProjCard(p)));
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// TASKS
+// ══════════════════════════════════════════════════════
+let taskFreqFilter='all', taskQuery='';
+
+function setTaskFilter(f, el){
+  taskFreqFilter=f;
+  document.querySelectorAll('#taskFilterBar .filter-pill').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  renderTasks();
+}
+function filterTasks(q){taskQuery=q;renderTasks();}
+
+function renderTasks(){
+  const el=document.getElementById('tasksList');
+  el.innerHTML='';
+  const q=taskQuery.toLowerCase();
+  const groups={};
+  TASKS.forEach(t=>{
+    if(q && !t.title.toLowerCase().includes(q) && !t.cat.toLowerCase().includes(q)) return;
+    if(taskFreqFilter!=='all' && t.freq!==taskFreqFilter) return;
+    if(!groups[t.freq]) groups[t.freq]=[];
+    groups[t.freq].push(t);
+  });
+  FREQ_ORDER.forEach(freq=>{
+    if(!groups[freq]) return;
+    const sec=document.createElement('div');
+    sec.className='section';sec.style.marginTop='12px';
+    sec.innerHTML=`<div class="section-header">${freq}</div><div class="card"></div>`;
+    const card=sec.querySelector('.card');
+    groups[freq].forEach(t=>card.appendChild(buildTaskRow(t,false)));
+    el.appendChild(sec);
+  });
+}
+
+function buildTaskRow(task, compact){
+  const div=document.createElement('div');
+  div.className='row';
+  const done=!!S.taskDone[task.id];
+  div.innerHTML=`
+    <div class="cb${done?' on':''}" onclick="toggleTask(${task.id},event)"></div>
+    <div class="row-icon" style="background:${task.color}">${task.icon}</div>
+    <div class="row-content${done?' done-text':''}">
+      <div class="row-title">${task.title}</div>
+      ${!compact?`<div class="row-subtitle">${task.cat}</div>`:''}
+    </div>
+    <div class="row-right">
+      ${!compact?`<span class="tag ${FREQ_COLOR[task.freq]}">${task.freq}</span>`:''}
+      <div class="chevron">›</div>
+    </div>`;
+  div.querySelector('.row-content').addEventListener('click',()=>openTask(task.id));
+  div.querySelector('.row-right').addEventListener('click',()=>openTask(task.id));
+  return div;
+}
+
+function toggleTask(id,e){
+  if(e)e.stopPropagation();
+  S.taskDone[id]=!S.taskDone[id];
+  saveS();renderTasks();refreshHome();
+}
+
+function openTask(id){
+  const t=TASKS.find(x=>x.id===id);if(!t)return;
+  S.curTaskId=id;
+  document.getElementById('tsTitle').textContent=t.title;
+  document.getElementById('tsIcon').textContent=t.icon;
+  document.getElementById('tsIcon').style.background=t.color;
+  document.getElementById('tsFreq').textContent=t.freq;
+  document.getElementById('tsCat').textContent=t.cat;
+  document.getElementById('tsTag').className=`tag ${FREQ_COLOR[t.freq]}`;
+  document.getElementById('tsTag').textContent=t.freq;
+  document.getElementById('tsNotes').value=S.taskNotes[id]||'';
+  document.getElementById('tsToggle').className='toggle'+(S.taskDone[id]?' on':'');
+  openSheet('taskSheet');
+}
+
+function toggleTaskDone(){
+  if(!S.curTaskId)return;
+  S.taskDone[S.curTaskId]=!S.taskDone[S.curTaskId];
+  document.getElementById('tsToggle').className='toggle'+(S.taskDone[S.curTaskId]?' on':'');
+  saveS();
+}
+
+document.getElementById('taskSheet').addEventListener('click',e=>{
+  if(e.target.id==='taskSheet')return;
+});
+document.getElementById('tsNotes').addEventListener('input',function(){
+  if(S.curTaskId)S.taskNotes[S.curTaskId]=this.value;
+  saveS();
+});
+
+// ══════════════════════════════════════════════════════
+// PROJECTS
+// ══════════════════════════════════════════════════════
+let projFilter='all';
+
+function setProjFilter(f,el){
+  projFilter=f;
+  document.querySelectorAll('#projFilterBar .filter-pill').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  renderProjects();
+}
+
+function renderProjects(){
+  const el=document.getElementById('projectsList');
+  el.innerHTML='';
+  let list = S.projects.slice().reverse();
+  if(projFilter!=='all') list=list.filter(p=>p.status===projFilter);
+  if(!list.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">🔨</div><div class="empty-title">${projFilter==='all'?'No Projects Yet':'Nothing Here'}</div><div class="empty-sub">${projFilter==='all'?'Tap + to log your first repair,\nimprovement or project idea.':'No projects with this status yet.'}</div></div>`;
+    return;
+  }
+  list.forEach(p=>el.appendChild(buildProjCard(p)));
+}
+
+function buildProjCard(proj){
+  const div=document.createElement('div');
+  div.className='proj-card';
+  const cost = proj.actCost ? '$'+parseFloat(proj.actCost).toLocaleString() : (proj.estCost ? '~$'+parseFloat(proj.estCost).toLocaleString() : '');
+  div.innerHTML=`
+    <div class="proj-card-body">
+      <div class="proj-card-top">
+        <div class="proj-card-title">${proj.title}</div>
+      </div>
+      <div class="proj-card-meta">
+        <span class="tag ${TYPE_COLOR[proj.type]||'gray'}">${proj.type}</span>
+        <span class="tag ${STATUS_COLOR[proj.status]||'gray'}">${proj.status}</span>
+        ${proj.priority&&proj.priority!=='Normal'?`<span class="tag ${PRI_COLOR[proj.priority]||'gray'}">${proj.priority}</span>`:''}
+        <span class="tag gray">${PROJ_CATS.find(c=>c.id===proj.cat)?.icon||'🔧'} ${proj.cat||'Other'}</span>
+      </div>
+      ${proj.notes?`<div class="proj-card-note">${proj.notes.substring(0,80)}${proj.notes.length>80?'…':''}</div>`:''}
+    </div>
+    <div class="proj-card-footer">
+      <div class="proj-card-cost">${cost||'No cost logged'}</div>
+      <div class="proj-card-date">${proj.startDate?fmtDate(proj.startDate):proj.createdAt?fmtDate(proj.createdAt):''}</div>
+    </div>`;
+  div.addEventListener('click',()=>openProjDetail(proj.id));
+  return div;
+}
+
+function fmtDate(d){
+  if(!d)return'';
+  try{return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch(e){return d;}
+}
+
+// ── ADD / EDIT PROJECT ──
+let editingProjId = null;
+
+function openNewProject(){
+  editingProjId=null;
+  document.getElementById('peSheetTitle').textContent='New Project';
+  document.getElementById('peTitle').value='';
+  document.getElementById('peNotes').value='';
+  document.getElementById('peEstCost').value='';
+  document.getElementById('peActCost').value='';
+  document.getElementById('peStartDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('peEndDate').value='';
+  document.getElementById('peContractor').value='';
+  setSeg('peTypeSeg',document.querySelector('#peTypeSeg .seg-btn'),'Repair');
+  setSeg('peStatusSeg',document.querySelector('#peStatusSeg .seg-btn'),'Idea');
+  setSeg('pePriSeg',document.querySelector('#pePriSeg .seg-btn'),'Normal');
+  buildCatGrid('');
+  document.getElementById('peDeleteWrap').style.display='none';
+  openSheet('projEditSheet');
+}
+
+function editCurrentProject(){
+  closeSheet('projDetailSheet');
+  const p=S.projects.find(x=>x.id===S.curProjId);if(!p)return;
+  editingProjId=p.id;
+  document.getElementById('peSheetTitle').textContent='Edit Project';
+  document.getElementById('peTitle').value=p.title||'';
+  document.getElementById('peNotes').value=p.notes||'';
+  document.getElementById('peEstCost').value=p.estCost||'';
+  document.getElementById('peActCost').value=p.actCost||'';
+  document.getElementById('peStartDate').value=p.startDate||'';
+  document.getElementById('peEndDate').value=p.endDate||'';
+  document.getElementById('peContractor').value=p.contractor||'';
+  // segs
+  document.querySelectorAll('#peTypeSeg .seg-btn').forEach(b=>{b.classList.toggle('active',b.textContent.trim()===p.type);});
+  document.querySelectorAll('#peStatusSeg .seg-btn').forEach(b=>{const map={'Idea':'Idea','Planned':'Planned','In Progress':'Active','Complete':'Done'};b.classList.toggle('active',map[p.status]===b.textContent.trim());});
+  document.querySelectorAll('#pePriSeg .seg-btn').forEach(b=>{b.classList.toggle('active',b.textContent.trim()===p.priority);});
+  buildCatGrid(p.cat||'');
+  document.getElementById('peDeleteWrap').style.display='block';
+  openSheet('projEditSheet');
+}
+
+function setSeg(segId, btn, val){
+  document.querySelectorAll('#'+segId+' .seg-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.dataset.val=val;
+}
+
+function getSegVal(segId){
+  const b=document.querySelector('#'+segId+' .seg-btn.active');
+  return b?b.dataset.val||b.textContent.trim():'';
+}
+
+function buildCatGrid(selected){
+  const g=document.getElementById('peCatGrid');
+  g.innerHTML='';
+  PROJ_CATS.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='option-btn'+(c.id===selected?' active':'');
+    d.innerHTML=`<span class="opt-icon">${c.icon}</span>${c.id}`;
+    d.addEventListener('click',()=>{document.querySelectorAll('#peCatGrid .option-btn').forEach(x=>x.classList.remove('active'));d.classList.add('active');});
+    g.appendChild(d);
+  });
+}
+
+function getSelectedCat(){
+  const b=document.querySelector('#peCatGrid .option-btn.active');
+  return b?b.textContent.trim().split('\n').pop().trim():'Other';
+}
+
+function saveProject(){
+  const title=document.getElementById('peTitle').value.trim();
+  if(!title){document.getElementById('peTitle').focus();return;}
+  // map seg display text to status value
+  const rawStatus=getSegVal('peStatusSeg');
+  const statusMap={'Idea':'Idea','Planned':'Planned','Active':'In Progress','Done':'Complete'};
+  const status=statusMap[rawStatus]||rawStatus;
+  const proj={
+    id: editingProjId || Date.now(),
+    title, type:getSegVal('peTypeSeg'), cat:getSelectedCat(),
+    status, priority:getSegVal('pePriSeg'),
+    estCost:document.getElementById('peEstCost').value,
+    actCost:document.getElementById('peActCost').value,
+    startDate:document.getElementById('peStartDate').value,
+    endDate:document.getElementById('peEndDate').value,
+    contractor:document.getElementById('peContractor').value.trim(),
+    notes:document.getElementById('peNotes').value.trim(),
+    createdAt: editingProjId ? (S.projects.find(x=>x.id===editingProjId)||{}).createdAt : new Date().toISOString().split('T')[0],
+  };
+  if(editingProjId){
+    const idx=S.projects.findIndex(x=>x.id===editingProjId);
+    if(idx>=0)S.projects[idx]=proj;
+  } else {
+    S.projects.push(proj);
+  }
+  saveS();
+  closeSheet('projEditSheet');
+  renderProjects();
+  refreshHome();
+}
+
+function deleteProject(){
+  if(!editingProjId)return;
+  if(!confirm('Delete this project?'))return;
+  S.projects=S.projects.filter(x=>x.id!==editingProjId);
+  saveS();
+  closeSheet('projEditSheet');
+  renderProjects();
+  refreshHome();
+}
+
+// ── PROJECT DETAIL ──
+function openProjDetail(id){
+  const p=S.projects.find(x=>x.id===id);if(!p)return;
+  S.curProjId=id;
+  document.getElementById('pdTitle').textContent=p.title;
+  document.getElementById('pdTypTag').className=`tag ${TYPE_COLOR[p.type]||'gray'}`;
+  document.getElementById('pdTypTag').textContent=p.type;
+  document.getElementById('pdStatusTag').className=`tag ${STATUS_COLOR[p.status]||'gray'}`;
+  document.getElementById('pdStatusTag').textContent=p.status;
+  document.getElementById('pdPriTag').className=`tag ${PRI_COLOR[p.priority]||'gray'}`;
+  document.getElementById('pdPriTag').textContent=p.priority||'Normal';
+  // status steps
+  const ss=document.getElementById('pdStatusSteps');
+  ss.innerHTML='';
+  STATUS_STEPS.forEach((s,i)=>{
+    const curIdx=STATUS_STEPS.indexOf(p.status);
+    const div=document.createElement('div');
+    div.className='status-step'+(i<curIdx?' done':i===curIdx?' current':'');
+    div.innerHTML=`<div class="status-line"></div><div class="status-step-dot"></div><div class="status-step-label">${s}</div>`;
+    ss.appendChild(div);
+  });
+  // cost bars
+  const cb=document.getElementById('pdCostBars');
+  cb.innerHTML='';
+  const est=parseFloat(p.estCost)||0, act=parseFloat(p.actCost)||0;
+  if(est||act){
+    const max=Math.max(est,act,1);
+    if(est) cb.innerHTML+=`<div class="cost-bar-label"><span>Estimated</span><span>$${est.toLocaleString()}</span></div><div class="cost-bar-track"><div class="cost-bar-fill" style="width:${(est/max*100).toFixed(1)}%;background:var(--blue)"></div></div><br>`;
+    if(act) cb.innerHTML+=`<div class="cost-bar-label"><span>Actual</span><span>$${act.toLocaleString()}</span></div><div class="cost-bar-track"><div class="cost-bar-fill" style="width:${(act/max*100).toFixed(1)}%;background:${act>est&&est?'var(--red)':'var(--green)'}"></div></div>`;
+  } else {
+    cb.innerHTML='<div style="color:var(--label3);font-size:14px">No cost logged yet</div>';
+  }
+  // detail rows
+  const dr=document.getElementById('pdDetailRows');
+  dr.innerHTML='';
+  const rows=[
+    ['Category', (PROJ_CATS.find(c=>c.id===p.cat)?.icon||'🔧')+' '+(p.cat||'Other')],
+    ['Started', p.startDate?fmtDate(p.startDate):'—'],
+    ['Completed', p.endDate?fmtDate(p.endDate):'—'],
+    ['Contractor', p.contractor||'—'],
+  ];
+  rows.forEach(([l,v])=>{
+    dr.innerHTML+=`<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-value">${v}</span></div>`;
+  });
+  // notes
+  const pn=document.getElementById('pdNotes');
+  if(p.notes){pn.textContent=p.notes;document.getElementById('pdNotesSection').style.display='';}
+  else document.getElementById('pdNotesSection').style.display='none';
+  openSheet('projDetailSheet');
+}
+
+// ══════════════════════════════════════════════════════
+// APPOINTMENTS
+// ══════════════════════════════════════════════════════
+const APPT_TYPE_COLOR = {Service:'blue', Repair:'red', Inspection:'orange', Delivery:'green', Other:'gray'};
+const APPT_TYPE_ICON  = {Service:'🔧', Repair:'🛠️', Inspection:'🔍', Delivery:'📦', Other:'📋'};
+
+function fmtTime(t){
+  if(!t)return'';
+  try{const[h,m]=t.split(':');const hr=+h;return(hr>12?hr-12:hr||12)+':'+(m||'00')+' '+(hr>=12?'PM':'AM');}catch(e){return t;}
+}
+
+function apptCountdown(dateStr, timeStr){
+  const now = new Date();
+  const apptDate = new Date(dateStr+'T'+(timeStr||'00:00'));
+  const diffMs = apptDate - now;
+  const diffDays = Math.ceil((new Date(dateStr+'T00:00:00') - new Date(now.toDateString()))/86400000);
+  if(diffMs < 0) return {label:'Past', cls:'past'};
+  if(diffDays === 0) return {label:'Today', cls:'today'};
+  if(diffDays === 1) return {label:'Tomorrow', cls:''};
+  return {label:`In ${diffDays} days`, cls:''};
+}
+
+function renderAppts(){
+  const el = document.getElementById('apptList');
+  el.innerHTML='';
+  const list = (S.appointments||[]).slice().sort((a,b)=>new Date(a.date+'T'+(a.time||'00:00'))-new Date(b.date+'T'+(b.time||'00:00')));
+  if(!list.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No Appointments</div><div class="empty-sub">Tap + to schedule a service visit,\ninspection, or contractor appointment.</div></div>`;
+    return;
+  }
+  const upcoming=list.filter(a=>a.status!=='Complete');
+  const past=list.filter(a=>a.status==='Complete');
+  function renderGroup(items, header){
+    if(!items.length)return;
+    const sec=document.createElement('div');
+    sec.className='section';sec.style.marginTop='12px';
+    sec.innerHTML=`<div class="section-header">${header}</div>`;
+    items.forEach(a=>{
+      const card=document.createElement('div');
+      card.className='appt-card';
+      const d=new Date(a.date+'T12:00:00');
+      const mo=d.toLocaleDateString('en-US',{month:'short'}).toUpperCase();
+      const day=d.getDate();
+      const cd=apptCountdown(a.date,a.time);
+      const icon=APPT_TYPE_ICON[a.type]||'📋';
+      card.innerHTML=`
+        <div class="appt-card-header">
+          <div class="appt-date-block"><div class="appt-date-mo">${mo}</div><div class="appt-date-day">${day}</div></div>
+          <div class="appt-info">
+            <div class="appt-title">${a.title}</div>
+            <div class="appt-meta">${icon} ${a.type}${a.who?' · '+a.who:''}</div>
+          </div>
+          <span class="tag ${APPT_TYPE_COLOR[a.type]||'gray'}" style="flex-shrink:0">${a.type}</span>
+        </div>
+        <div class="appt-card-footer">
+          <div class="appt-countdown ${cd.cls}">${a.status==='Complete'?'✓ Complete':cd.label}${a.time&&a.status!=='Complete'?' · '+fmtTime(a.time):''}</div>
+          ${a.linked?`<div style="font-size:12px;color:var(--label3)">🔗 ${a.linked}</div>`:''}
+        </div>`;
+      card.addEventListener('click',()=>openApptDetail(a.id));
+      sec.appendChild(card);
+    });
+    el.appendChild(sec);
+  }
+  renderGroup(upcoming,'Upcoming');
+  renderGroup(past,'Past');
+}
+
+let editingApptId = null;
+
+function openNewAppt(){
+  editingApptId=null;
+  document.getElementById('aeSheetTitle').textContent='New Appointment';
+  document.getElementById('aeTitle').value='';
+  document.getElementById('aeDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('aeTime').value='09:00';
+  document.getElementById('aeWho').value='';
+  document.getElementById('aePhone').value='';
+  document.getElementById('aeLinked').value='';
+  document.getElementById('aeNotes').value='';
+  setSeg('aeTypeSeg',document.querySelector('#aeTypeSeg .seg-btn'),'Service');
+  document.querySelector('#aeTypeSeg .seg-btn').classList.add('active');
+  document.getElementById('aeDeleteWrap').style.display='none';
+  openSheet('apptEditSheet');
+}
+
+function editCurrentAppt(){
+  closeSheet('apptDetailSheet');
+  const a=(S.appointments||[]).find(x=>x.id===S.curApptId);if(!a)return;
+  editingApptId=a.id;
+  document.getElementById('aeSheetTitle').textContent='Edit Appointment';
+  document.getElementById('aeTitle').value=a.title||'';
+  document.getElementById('aeDate').value=a.date||'';
+  document.getElementById('aeTime').value=a.time||'';
+  document.getElementById('aeWho').value=a.who||'';
+  document.getElementById('aePhone').value=a.phone||'';
+  document.getElementById('aeLinked').value=a.linked||'';
+  document.getElementById('aeNotes').value=a.notes||'';
+  document.querySelectorAll('#aeTypeSeg .seg-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===a.type));
+  document.getElementById('aeDeleteWrap').style.display='block';
+  openSheet('apptEditSheet');
+}
+
+function saveAppt(){
+  const title=document.getElementById('aeTitle').value.trim();
+  if(!title){document.getElementById('aeTitle').focus();return;}
+  const appt={
+    id: editingApptId || Date.now(),
+    title,
+    type: getSegVal('aeTypeSeg'),
+    date: document.getElementById('aeDate').value,
+    time: document.getElementById('aeTime').value,
+    who: document.getElementById('aeWho').value.trim(),
+    phone: document.getElementById('aePhone').value.trim(),
+    linked: document.getElementById('aeLinked').value.trim(),
+    notes: document.getElementById('aeNotes').value.trim(),
+    status: editingApptId ? ((S.appointments||[]).find(x=>x.id===editingApptId)||{}).status||'Upcoming' : 'Upcoming',
+    createdAt: editingApptId ? ((S.appointments||[]).find(x=>x.id===editingApptId)||{}).createdAt : new Date().toISOString(),
+  };
+  if(!S.appointments) S.appointments=[];
+  if(editingApptId){
+    const idx=S.appointments.findIndex(x=>x.id===editingApptId);
+    if(idx>=0)S.appointments[idx]=appt;
+  } else {
+    S.appointments.push(appt);
+  }
+  saveS();
+  closeSheet('apptEditSheet');
+  renderAppts();
+  refreshHome();
+}
+
+function deleteAppt(){
+  if(!editingApptId)return;
+  if(!confirm('Delete this appointment?'))return;
+  S.appointments=(S.appointments||[]).filter(x=>x.id!==editingApptId);
+  saveS();closeSheet('apptEditSheet');renderAppts();refreshHome();
+}
+
+function markApptComplete(){
+  const a=(S.appointments||[]).find(x=>x.id===S.curApptId);
+  if(!a)return;
+  a.status='Complete';
+  saveS();closeSheet('apptDetailSheet');renderAppts();refreshHome();
+}
+
+function openApptDetail(id){
+  const a=(S.appointments||[]).find(x=>x.id===id);if(!a)return;
+  S.curApptId=id;
+  document.getElementById('adTitle').textContent=a.title;
+  document.getElementById('adTypeTag').className=`tag ${APPT_TYPE_COLOR[a.type]||'gray'}`;
+  document.getElementById('adTypeTag').textContent=a.type;
+  const cd=apptCountdown(a.date,a.time);
+  document.getElementById('adStatusTag').className=`tag ${a.status==='Complete'?'green':cd.cls==='today'?'orange':cd.cls==='past'?'gray':'blue'}`;
+  document.getElementById('adStatusTag').textContent=a.status==='Complete'?'Complete':cd.label;
+  const dr=document.getElementById('adDetailRows');
+  dr.innerHTML='';
+  const d=new Date(a.date+'T12:00:00');
+  const dateStr=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const rows=[
+    ['Date', dateStr],
+    a.time?['Time', fmtTime(a.time)]:null,
+    a.who?['Who', a.who]:null,
+    a.phone?['Phone', `<a href="tel:${a.phone}" style="color:var(--blue)">${a.phone}</a>`]:null,
+    a.linked?['Related to', a.linked]:null,
+  ].filter(Boolean);
+  rows.forEach(([l,v])=>{dr.innerHTML+=`<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-value">${v}</span></div>`;});
+  const ns=document.getElementById('adNotesSection');
+  if(a.notes){document.getElementById('adNotes').textContent=a.notes;ns.style.display='';}
+  else ns.style.display='none';
+  document.getElementById('adCompleteSection').style.display=a.status==='Complete'?'none':'';
+  openSheet('apptDetailSheet');
+}
+
+function addApptToCalendar(){
+  const a=(S.appointments||[]).find(x=>x.id===S.curApptId);if(!a)return;
+  const dt=a.date.replace(/-/g,'');
+  let start,end;
+  if(a.time){
+    const[h,m]=a.time.split(':');
+    const endH=String(+h+1).padStart(2,'0');
+    start=`${dt}T${h}${m}00`;end=`${dt}T${endH}${m}00`;
+  } else {
+    start=dt;end=dt;
+  }
+  const title=encodeURIComponent(a.title+(a.who?' — '+a.who:''));
+  const notes=encodeURIComponent((a.notes||'')+(a.linked?'\nRelated to: '+a.linked:''));
+  const url=`data:text/calendar;charset=utf8,BEGIN:VCALENDAR%0AVERSION:2.0%0ABEGIN:VEVENT%0ADTSTART:${start}%0ADTEND:${end}%0ASUMMARY:${title}%0ADESCRIPTION:${notes}%0AEND:VEVENT%0AEND:VCALENDAR`;
+  const link=document.createElement('a');
+  link.href=url;link.download='appointment.ics';link.click();
+}
+
+// ══════════════════════════════════════════════════════
+// VAULT (DOCUMENTS)
+// ══════════════════════════════════════════════════════
+const DOC_TYPES = [
+  {id:'Invoice',icon:'🧾',color:'rgba(52,199,89,.1)'},
+  {id:'Warranty',icon:'🛡️',color:'rgba(0,122,255,.1)'},
+  {id:'Manual',icon:'📖',color:'rgba(88,86,214,.1)'},
+  {id:'Receipt',icon:'💳',color:'rgba(52,199,89,.1)'},
+  {id:'Contract',icon:'📝',color:'rgba(255,149,0,.1)'},
+  {id:'Report',icon:'📊',color:'rgba(90,200,250,.1)'},
+  {id:'Photo',icon:'📷',color:'rgba(175,82,222,.1)'},
+  {id:'Other',icon:'📁',color:'rgba(142,142,147,.1)'},
+];
+
+let vaultFilter='all';
+
+function setVaultFilter(f,el){
+  vaultFilter=f;
+  document.querySelectorAll('#vaultFilterBar .filter-pill').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  renderVault(document.getElementById('vaultSearch')?.value||'');
+}
+
+function docExpiryStatus(expiryStr){
+  if(!expiryStr)return null;
+  const now=new Date();now.setHours(0,0,0,0);
+  const exp=new Date(expiryStr+'T00:00:00');
+  const diffDays=Math.round((exp-now)/86400000);
+  if(diffDays<0)return{label:'Expired '+fmtDate(expiryStr),cls:'doc-expiry-expired'};
+  if(diffDays<=30)return{label:'Expires in '+diffDays+' days',cls:'doc-expiry-warn'};
+  if(diffDays<=90)return{label:'Expires '+fmtDate(expiryStr),cls:'doc-expiry-warn'};
+  return{label:'Expires '+fmtDate(expiryStr),cls:''};
+}
+
+function renderVault(query){
+  const el=document.getElementById('vaultList');
+  if(!el)return;
+  el.innerHTML='';
+  const q=(query||'').toLowerCase();
+  let list=(S.docs||[]).slice().reverse();
+  if(vaultFilter!=='all')list=list.filter(d=>d.type===vaultFilter);
+  if(q)list=list.filter(d=>(d.title+d.vendor+d.notes+d.linked+d.type).toLowerCase().includes(q));
+  if(!list.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">${vaultFilter==='all'&&!q?'No Documents Yet':'Nothing Found'}</div><div class="empty-sub">${vaultFilter==='all'&&!q?'Tap + to add invoices, warranties,\nmanuals and more.':'Try a different search or filter.'}</div></div>`;
+    return;
+  }
+  list.forEach(doc=>{
+    const dt=DOC_TYPES.find(t=>t.id===doc.type)||DOC_TYPES[DOC_TYPES.length-1];
+    const expiry=docExpiryStatus(doc.expiry);
+    const card=document.createElement('div');
+    card.className='doc-card';
+    card.innerHTML=`<div class="doc-card-row">
+      <div class="doc-type-icon" style="background:${dt.color}">${dt.icon}</div>
+      <div class="doc-info">
+        <div class="doc-title">${doc.title}</div>
+        <div class="doc-meta">${doc.type}${doc.vendor?' · '+doc.vendor:''}${doc.date?' · '+fmtDate(doc.date):''}</div>
+        ${expiry?`<div class="${expiry.cls||'doc-meta'}">${expiry.label}</div>`:''}
+      </div>
+      ${doc.amount?`<div style="font-size:14px;font-weight:600;color:var(--label);flex-shrink:0">$${parseFloat(doc.amount).toLocaleString()}</div>`:''}
+    </div>`;
+    card.addEventListener('click',()=>openDocDetail(doc.id));
+    el.appendChild(card);
+  });
+}
+
+let editingDocId=null;
+
+function buildDocTypeGrid(selected){
+  const g=document.getElementById('veTypeGrid');
+  g.innerHTML='';
+  DOC_TYPES.forEach(dt=>{
+    const d=document.createElement('div');
+    d.className='option-btn'+(dt.id===selected?' active':'');
+    d.innerHTML=`<span class="opt-icon">${dt.icon}</span>${dt.id}`;
+    d.dataset.val=dt.id;
+    d.addEventListener('click',()=>{document.querySelectorAll('#veTypeGrid .option-btn').forEach(x=>x.classList.remove('active'));d.classList.add('active');});
+    g.appendChild(d);
+  });
+}
+
+function getSelectedDocType(){
+  const b=document.querySelector('#veTypeGrid .option-btn.active');
+  return b?b.dataset.val||b.textContent.trim():'Other';
+}
+
+function openNewDoc(){
+  editingDocId=null;
+  document.getElementById('veSheetTitle').textContent='Add Document';
+  document.getElementById('veTitle').value='';
+  document.getElementById('veDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('veExpiry').value='';
+  document.getElementById('veVendor').value='';
+  document.getElementById('veAmount').value='';
+  document.getElementById('veLinked').value='';
+  document.getElementById('veNotes').value='';
+  buildDocTypeGrid('Invoice');
+  document.getElementById('veDeleteWrap').style.display='none';
+  openSheet('vaultEditSheet');
+}
+
+function editCurrentDoc(){
+  closeSheet('vaultDetailSheet');
+  const doc=(S.docs||[]).find(x=>x.id===S.curDocId);if(!doc)return;
+  editingDocId=doc.id;
+  document.getElementById('veSheetTitle').textContent='Edit Document';
+  document.getElementById('veTitle').value=doc.title||'';
+  document.getElementById('veDate').value=doc.date||'';
+  document.getElementById('veExpiry').value=doc.expiry||'';
+  document.getElementById('veVendor').value=doc.vendor||'';
+  document.getElementById('veAmount').value=doc.amount||'';
+  document.getElementById('veLinked').value=doc.linked||'';
+  document.getElementById('veNotes').value=doc.notes||'';
+  buildDocTypeGrid(doc.type||'Invoice');
+  document.getElementById('veDeleteWrap').style.display='block';
+  openSheet('vaultEditSheet');
+}
+
+function saveDoc(){
+  const title=document.getElementById('veTitle').value.trim();
+  if(!title){document.getElementById('veTitle').focus();return;}
+  const doc={
+    id:editingDocId||Date.now(),
+    title,
+    type:getSelectedDocType(),
+    date:document.getElementById('veDate').value,
+    expiry:document.getElementById('veExpiry').value,
+    vendor:document.getElementById('veVendor').value.trim(),
+    amount:document.getElementById('veAmount').value,
+    linked:document.getElementById('veLinked').value.trim(),
+    notes:document.getElementById('veNotes').value.trim(),
+    createdAt:editingDocId?((S.docs||[]).find(x=>x.id===editingDocId)||{}).createdAt:new Date().toISOString(),
+  };
+  if(!S.docs)S.docs=[];
+  if(editingDocId){
+    const idx=S.docs.findIndex(x=>x.id===editingDocId);
+    if(idx>=0)S.docs[idx]=doc;
+  } else {
+    S.docs.push(doc);
+  }
+  saveS();closeSheet('vaultEditSheet');renderVault('');
+}
+
+function deleteDoc(){
+  if(!editingDocId)return;
+  if(!confirm('Delete this document?'))return;
+  S.docs=(S.docs||[]).filter(x=>x.id!==editingDocId);
+  saveS();closeSheet('vaultEditSheet');renderVault('');
+}
+
+function openDocDetail(id){
+  const doc=(S.docs||[]).find(x=>x.id===id);if(!doc)return;
+  S.curDocId=id;
+  const dt=DOC_TYPES.find(t=>t.id===doc.type)||DOC_TYPES[DOC_TYPES.length-1];
+  document.getElementById('vdTitle').textContent=doc.title;
+  document.getElementById('vdTypeTag').textContent=dt.icon+' '+doc.type;
+  document.getElementById('vdTypeTag').className='tag purple';
+  // expiry badge
+  const expiry=docExpiryStatus(doc.expiry);
+  const et=document.getElementById('vdExpiryTag');
+  if(expiry){et.className=`tag ${expiry.cls?'red':'gray'}`;et.textContent=expiry.label;et.style.display='';}
+  else et.style.display='none';
+  const dr=document.getElementById('vdDetailRows');
+  dr.innerHTML='';
+  const rows=[
+    doc.date?['Date', fmtDate(doc.date)]:null,
+    doc.expiry?['Expires', fmtDate(doc.expiry)]:null,
+    doc.vendor?['Vendor', doc.vendor]:null,
+    doc.amount?['Amount', '$'+parseFloat(doc.amount).toLocaleString()]:null,
+    doc.linked?['Related to', doc.linked]:null,
+  ].filter(Boolean);
+  rows.forEach(([l,v])=>{dr.innerHTML+=`<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-value">${v}</span></div>`;});
+  const ns=document.getElementById('vdNotesSection');
+  if(doc.notes){document.getElementById('vdNotes').textContent=doc.notes;ns.style.display='';}
+  else ns.style.display='none';
+  openSheet('vaultDetailSheet');
+}
+
+// ══════════════════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════════════════
+function refreshProfile(){
+  const spent=S.projects.reduce((s,p)=>s+(parseFloat(p.actCost)||0),0);
+  document.getElementById('totalSpentYear').textContent='$'+Math.round(spent).toLocaleString();
+  document.getElementById('totalProjDone').textContent=S.projects.filter(p=>p.status==='Complete').length;
+  document.getElementById('totalProjAll').textContent=S.projects.length;
+  if(S.homeNotes)document.getElementById('homeNotes').value=S.homeNotes;
+}
+
+document.getElementById('homeNotes').addEventListener('input',function(){S.homeNotes=this.value;saveS();});
+
+function resetAllData(){
+  if(confirm('Reset all data? This cannot be undone.')){
+    S={taskDone:{},taskNotes:{},projects:[],appointments:[],docs:[],homeNotes:'',curTaskId:null,curProjId:null,curApptId:null,curDocId:null};
+    saveS();switchPage('Home');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+loadS();
+switchPage('Home');
+buildCatGrid('');
+buildDocTypeGrid('Invoice');
+// Set today's date default for new project
+document.getElementById('peStartDate').value=new Date().toISOString().split('T')[0];
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/alaskas-house/sw.js', {scope:'/alaskas-house/'})
+    .then(reg => {
+      // Check for updates on each load
+      reg.update();
+    }).catch(e => console.warn('SW registration failed', e));
+}
+</script>
+</body>
+</html>
