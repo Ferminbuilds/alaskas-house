@@ -514,9 +514,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
       <div class="section">
         <div class="section-header">Home Type</div>
         <div class="card">
-          <div id="hpTypeList">
-            ${['Single Family','Condo','Townhouse','Multi-Family','Mobile Home','Other'].map(t=>`<div class="row hp-option" data-group="type" data-val="${t}"><div class="row-content"><div class="row-title">${t}</div></div><div class="row-right" style="font-size:18px;color:var(--blue)" id="hpType_${t.replace(/\s/g,'_')}"></div></div>`).join('')}
-          </div>
+          <div id="hpTypeList"></div>
         </div>
       </div>
       <div class="section">
@@ -542,43 +540,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
       </div>
       <div class="section">
         <div class="section-header">Heating System</div>
-        <div class="card">
-          <div id="hpHeatingList">
-            ${['Gas Furnace','Electric Furnace','Heat Pump','Boiler','Radiant','Mini-Split','Other'].map(t=>`<div class="row hp-option" data-group="heating" data-val="${t}"><div class="row-content"><div class="row-title">${t}</div></div><div class="row-right" style="font-size:18px;color:var(--blue)" id="hpHeating_${t.replace(/\s|-/g,'_')}"></div></div>`).join('')}
-          </div>
-        </div>
+        <div class="card"><div id="hpHeatingList"></div></div>
       </div>
       <div class="section">
         <div class="section-header">Cooling / AC</div>
-        <div class="card">
-          <div id="hpCoolingList">
-            ${['Central AC','Mini-Split','Window Units','Evaporative','Heat Pump','None'].map(t=>`<div class="row hp-option" data-group="cooling" data-val="${t}"><div class="row-content"><div class="row-title">${t}</div></div><div class="row-right" style="font-size:18px;color:var(--blue)" id="hpCooling_${t.replace(/\s|-/g,'_')}"></div></div>`).join('')}
-          </div>
-        </div>
+        <div class="card"><div id="hpCoolingList"></div></div>
       </div>
       <div class="section">
         <div class="section-header">Roof Type</div>
-        <div class="card">
-          <div id="hpRoofList">
-            ${['Asphalt Shingles','Metal','Tile','Flat/TPO','Wood Shake','Other'].map(t=>`<div class="row hp-option" data-group="roof" data-val="${t}"><div class="row-content"><div class="row-title">${t}</div></div><div class="row-right" style="font-size:18px;color:var(--blue)" id="hpRoof_${t.replace(/[\s\/]/g,'_')}"></div></div>`).join('')}
-          </div>
-        </div>
+        <div class="card"><div id="hpRoofList"></div></div>
       </div>
       <div class="section">
         <div class="section-header">Water Heater</div>
-        <div class="card">
-          <div id="hpWaterList">
-            ${['Gas Tank','Electric Tank','Tankless Gas','Tankless Electric','Heat Pump','Other'].map(t=>`<div class="row hp-option" data-group="water" data-val="${t}"><div class="row-content"><div class="row-title">${t}</div></div><div class="row-right" style="font-size:18px;color:var(--blue)" id="hpWater_${t.replace(/\s/g,'_')}"></div></div>`).join('')}
-          </div>
-        </div>
+        <div class="card"><div id="hpWaterList"></div></div>
       </div>
       <div class="section">
         <div class="section-header">Garage</div>
-        <div class="card">
-          <div id="hpGarageList">
-            ${['None','1-Car Attached','2-Car Attached','3-Car Attached','Detached','Carport'].map(t=>`<div class="row hp-option" data-group="garage" data-val="${t}"><div class="row-content"><div class="row-title">${t}</div></div><div class="row-right" style="font-size:18px;color:var(--blue)" id="hpGarage_${t.replace(/[\s-]/g,'_')}"></div></div>`).join('')}
-          </div>
-        </div>
+        <div class="card"><div id="hpGarageList"></div></div>
       </div>
     </div>
   </div>
@@ -2013,66 +1991,70 @@ function refreshProfile(){
 }
 
 // ── Home Profile Edit ───────────────────────────────────
+const HP_OPTIONS = {
+  type:    {label:'Home Type',    opts:['Single Family','Condo','Townhouse','Multi-Family','Mobile Home','Other']},
+  heating: {label:'Heating',      opts:['Gas Furnace','Electric Furnace','Heat Pump','Boiler','Radiant','Mini-Split','Other']},
+  cooling: {label:'Cooling',      opts:['Central AC','Mini-Split','Window Units','Evaporative','Heat Pump','None']},
+  roof:    {label:'Roof',         opts:['Asphalt Shingles','Metal','Tile','Flat/TPO','Wood Shake','Other']},
+  water:   {label:'Water Heater', opts:['Gas Tank','Electric Tank','Tankless Gas','Tankless Electric','Heat Pump','Other']},
+  garage:  {label:'Garage',       opts:['None','1-Car Attached','2-Car Attached','3-Car Attached','Detached','Carport']}
+};
+// Maps group key → storage key
+const HP_KEY_MAP = {type:'homeType',heating:'heating',cooling:'cooling',roof:'roof',water:'water',garage:'garage'};
+
+function buildHpList(group, selectedVal){
+  const container = document.getElementById('hp'+group.charAt(0).toUpperCase()+group.slice(1)+'List');
+  if(!container) return;
+  const opts = HP_OPTIONS[group].opts;
+  container.innerHTML = opts.map(opt => {
+    const check = opt === selectedVal ? '✓' : '';
+    return `<div class="row hp-option" data-group="${group}" data-val="${opt}" onclick="selectHpOption('${group}','${opt}')">
+      <div class="row-content"><div class="row-title">${opt}</div></div>
+      <div class="row-right" style="font-size:18px;color:var(--blue);font-weight:600">${check}</div>
+    </div>`;
+  }).join('');
+}
+
 function openHomeProfileEdit(){
   const hp = S.homeProfile || {};
   // Text inputs
-  const fld = (id,val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
-  fld('hpAddress', hp.address);
-  fld('hpYearBuilt', hp.yearBuilt);
-  fld('hpSqft', hp.sqft);
-  fld('hpBeds', hp.beds);
-  fld('hpBaths', hp.baths);
-  // Option pickers — clear all checkmarks first, then set selected
-  const groups = {type:'homeType',heating:'heating',cooling:'cooling',roof:'roof',water:'water',garage:'garage'};
-  Object.entries(groups).forEach(([group, key])=>{
-    document.querySelectorAll(`.hp-option[data-group="${group}"]`).forEach(row=>{
-      const icon = row.querySelector('[id^="hp"]');
-      if(icon) icon.textContent = '';
-      row.onclick = ()=>selectHpOption(group, row.dataset.val, key);
-    });
-    // Set checkmark on current value
-    if(hp[key]){
-      const match = document.querySelector(`.hp-option[data-group="${group}"][data-val="${hp[key]}"]`);
-      if(match){ const icon=match.querySelector('[id^="hp"]'); if(icon) icon.textContent='✓'; }
-    }
+  ['Address','YearBuilt','Sqft','Beds','Baths'].forEach(f => {
+    const el = document.getElementById('hp'+f);
+    const key = f.charAt(0).toLowerCase()+f.slice(1);
+    if(el) el.value = hp[key]||'';
+  });
+  // Build option lists with current selections
+  Object.keys(HP_KEY_MAP).forEach(group => {
+    buildHpList(group, hp[HP_KEY_MAP[group]]||'');
   });
   openSheet('homeProfileSheet');
 }
 
-// temp holder while sheet is open
-let _hpSelections = {};
-function selectHpOption(group, val, key){
-  // Clear group
-  document.querySelectorAll(`.hp-option[data-group="${group}"]`).forEach(row=>{
-    const icon=row.querySelector('[id^="hp"]'); if(icon) icon.textContent='';
-  });
-  // Set this one
-  const match = document.querySelector(`.hp-option[data-group="${group}"][data-val="${val}"]`);
-  if(match){ const icon=match.querySelector('[id^="hp"]'); if(icon) icon.textContent='✓'; }
-  _hpSelections[key] = val;
+function selectHpOption(group, val){
+  // Update DOM
+  document.querySelectorAll(`.hp-option[data-group="${group}"] .row-right`).forEach(el => el.textContent='');
+  const row = document.querySelector(`.hp-option[data-group="${group}"][data-val="${val}"]`);
+  if(row) row.querySelector('.row-right').textContent='✓';
 }
 
 function saveHomeProfile(){
   const hp = S.homeProfile || {};
-  const g = id => (document.getElementById(id)||{}).value||'';
-  // Read text fields
+  const g = id => { const el=document.getElementById(id); return el ? el.value.trim() : ''; };
   hp.address   = g('hpAddress');
   hp.yearBuilt = g('hpYearBuilt');
   hp.sqft      = g('hpSqft');
   hp.beds      = g('hpBeds');
   hp.baths     = g('hpBaths');
-  // Read option selections (merge with any that weren't changed)
-  const groups = {type:'homeType',heating:'heating',cooling:'cooling',roof:'roof',water:'water',garage:'garage'};
-  Object.entries(groups).forEach(([group, key])=>{
-    // Check what's checked in the DOM
-    const checked = document.querySelector(`.hp-option[data-group="${group}"] [id^="hp"]:not(:empty)`);
-    if(checked){
-      const row = checked.closest('.hp-option');
-      if(row) hp[key] = row.dataset.val;
-    }
+  // Read selected option from DOM
+  Object.entries(HP_KEY_MAP).forEach(([group, key])=>{
+    const row = document.querySelector(`.hp-option[data-group="${group}"][data-val]`);
+    // Find the checked one
+    const allRows = document.querySelectorAll(`.hp-option[data-group="${group}"]`);
+    allRows.forEach(r => {
+      if(r.querySelector('.row-right').textContent.trim()==='✓') hp[key]=r.dataset.val;
+    });
   });
   S.homeProfile = hp;
-  _hpSelections = {};
   saveS();
   refreshProfile();
   closeSheet('homeProfileSheet');
