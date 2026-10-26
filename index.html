@@ -165,6 +165,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .sheet-backdrop.open .sheet{transform:translateY(0);transition:transform .36s cubic-bezier(.34,1.1,.64,1)}
 .sheet-handle{width:36px;height:4px;background:var(--bg4);border-radius:2px;margin:10px auto 2px}
 .sheet-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 14px;border-bottom:.5px solid var(--sep)}
+.ts-tabs{display:flex;background:var(--bg2);border-bottom:.5px solid var(--sep)}
+.ts-tab{flex:1;padding:10px 0;font-size:14px;font-weight:500;color:var(--label2);background:none;border:none;cursor:pointer;transition:color .15s}
+.ts-tab.active{color:var(--accent);border-bottom:2px solid var(--accent);margin-bottom:-1px}
+.guide-section{padding:18px 0;border-bottom:.5px solid var(--sep)}
+.guide-section:last-child{border-bottom:none}
+.guide-section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--label2);margin-bottom:8px}
+.guide-section-body{font-size:15px;line-height:1.5;color:var(--label)}
+.guide-steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.guide-steps li{display:flex;gap:10px;font-size:15px;line-height:1.45;color:var(--label)}
+.guide-step-num{min-width:22px;height:22px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:1px}
+.guide-tools{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.guide-tool-chip{background:var(--bg3);border-radius:8px;padding:5px 10px;font-size:13px;color:var(--label);line-height:1.3}
+.guide-pro-box{background:rgba(255,149,0,.1);border-left:3px solid rgba(255,149,0,.6);border-radius:0 8px 8px 0;padding:10px 12px;font-size:14px;line-height:1.45;color:var(--label)}
 .sheet-nav-title{font-size:17px;font-weight:600;color:var(--label);letter-spacing:-.3px}
 .sheet-btn{font-size:16px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;padding:4px;min-width:44px}
 .sheet-btn.red{color:var(--red)}
@@ -687,35 +700,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 
 <!-- ═══════════════════════════════════ TASK DETAIL SHEET ═══════════════════════════════════ -->
 <div class="sheet-backdrop" id="taskSheet" onclick="sheetClose('taskSheet',event)">
-  <div class="sheet">
+  <div class="sheet" style="max-height:92vh">
     <div class="sheet-handle"></div>
     <div class="sheet-nav">
       <button class="sheet-btn" onclick="closeSheet('taskSheet')">Done</button>
       <span class="sheet-nav-title" id="tsTitle">Task</span>
       <div style="width:44px"></div>
     </div>
-    <div class="section" style="margin-top:16px">
-      <div class="card">
-        <div class="row" style="cursor:default">
-          <div class="row-icon" id="tsIcon" style="background:rgba(0,122,255,.1)">🔧</div>
-          <div class="row-content"><div class="row-title" id="tsFreq">Monthly</div><div class="row-subtitle" id="tsCat">General</div></div>
-          <div class="row-right"><span class="tag blue" id="tsTag">Monthly</span></div>
+    <!-- Tab bar -->
+    <div class="ts-tabs">
+      <button class="ts-tab active" id="tsTabDetails" onclick="switchTaskTab('details')">Details</button>
+      <button class="ts-tab" id="tsTabGuide" onclick="switchTaskTab('guide')">Guide</button>
+    </div>
+    <!-- Details panel -->
+    <div id="tsPanelDetails" style="overflow-y:auto;padding-bottom:40px">
+      <div class="section" style="margin-top:16px">
+        <div class="card">
+          <div class="row" style="cursor:default">
+            <div class="row-icon" id="tsIcon" style="background:rgba(0,122,255,.1)">🔧</div>
+            <div class="row-content"><div class="row-title" id="tsFreq">Monthly</div><div class="row-subtitle" id="tsCat">General</div></div>
+            <div class="row-right"><span class="tag blue" id="tsTag">Monthly</span></div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="section">
-      <div class="form-label">Notes</div>
-      <textarea class="form-textarea" id="tsNotes" rows="3" placeholder="Last service date, contractor, notes…"></textarea>
-    </div>
-    <div class="section">
-      <div class="card">
-        <div class="row" style="cursor:default">
-          <div class="row-content"><div class="row-title">Mark Complete</div></div>
-          <div class="row-right"><div class="toggle" id="tsToggle" onclick="toggleTaskDone()"></div></div>
+      <div class="section">
+        <div class="form-label">Notes</div>
+        <textarea class="form-textarea" id="tsNotes" rows="3" placeholder="Last service date, contractor, notes…"></textarea>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="row" style="cursor:default">
+            <div class="row-content"><div class="row-title">Mark Complete</div></div>
+            <div class="row-right"><div class="toggle" id="tsToggle" onclick="toggleTaskDone()"></div></div>
+          </div>
         </div>
       </div>
+      <div class="section" style="margin-bottom:20px"><button class="btn-primary" onclick="closeSheet('taskSheet')">Done</button></div>
     </div>
-    <div class="section" style="margin-bottom:20px"><button class="btn-primary" onclick="closeSheet('taskSheet')">Done</button></div>
+    <!-- Guide panel -->
+    <div id="tsPanelGuide" style="display:none;overflow-y:auto;padding-bottom:40px">
+      <div id="tsGuideContent" style="padding:0 16px"></div>
+    </div>
   </div>
 </div>
 
@@ -1033,65 +1058,478 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 // TASKS DATA
 // ══════════════════════════════════════════════════════
 const TASKS = [
-  {id:1,title:'Replace HVAC Air Filter',freq:'Monthly',cat:'HVAC',icon:'🌬️',color:'rgba(0,122,255,.1)'},
-  {id:2,title:'Test Smoke & CO Detectors',freq:'Monthly',cat:'Safety',icon:'🔥',color:'rgba(255,59,48,.1)'},
-  {id:3,title:'Check Water Softener Salt',freq:'Monthly',cat:'Plumbing',icon:'💧',color:'rgba(90,200,250,.1)'},
-  {id:4,title:'Clean Range Hood Filter',freq:'Monthly',cat:'Kitchen',icon:'🍳',color:'rgba(255,149,0,.1)'},
-  {id:5,title:'Run Water in Unused Drains',freq:'Monthly',cat:'Plumbing',icon:'🚿',color:'rgba(90,200,250,.1)'},
-  {id:6,title:'Inspect Fire Extinguishers',freq:'Monthly',cat:'Safety',icon:'🧯',color:'rgba(255,59,48,.1)'},
-  {id:7,title:'Clean Garbage Disposal',freq:'Monthly',cat:'Kitchen',icon:'🌀',color:'rgba(255,149,0,.1)'},
-  {id:8,title:'Check Sump Pump',freq:'Monthly',cat:'Plumbing',icon:'💦',color:'rgba(90,200,250,.1)'},
-  {id:9,title:'Deep Clean Refrigerator Coils',freq:'Quarterly',cat:'Appliances',icon:'❄️',color:'rgba(90,200,250,.1)'},
-  {id:10,title:'Inspect Weatherstripping',freq:'Quarterly',cat:'Exterior',icon:'🚪',color:'rgba(52,199,89,.1)'},
-  {id:11,title:'Flush Water Heater Sediment',freq:'Quarterly',cat:'Plumbing',icon:'🔥',color:'rgba(255,59,48,.1)'},
-  {id:12,title:'Test GFCI Outlets',freq:'Quarterly',cat:'Electrical',icon:'⚡',color:'rgba(255,204,0,.1)'},
-  {id:13,title:'Inspect Caulking (Bath/Kitchen)',freq:'Quarterly',cat:'Interior',icon:'🛁',color:'rgba(175,82,222,.1)'},
-  {id:14,title:'Clean Dryer Vent',freq:'Quarterly',cat:'Appliances',icon:'👕',color:'rgba(52,199,89,.1)'},
-  {id:15,title:'Inspect Attic for Leaks/Pests',freq:'Quarterly',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)'},
-  {id:16,title:'Check Window/Door Seals',freq:'Quarterly',cat:'Exterior',icon:'🪟',color:'rgba(52,199,89,.1)'},
-  {id:17,title:'Service HVAC System',freq:'Bi-Annual',cat:'HVAC',icon:'❄️',color:'rgba(0,122,255,.1)'},
-  {id:18,title:'Replace Smoke Detector Batteries',freq:'Bi-Annual',cat:'Safety',icon:'🔋',color:'rgba(255,59,48,.1)'},
-  {id:19,title:'Inspect Roof & Gutters',freq:'Bi-Annual',cat:'Exterior',icon:'🏠',color:'rgba(52,199,89,.1)'},
-  {id:20,title:'Deep Clean Oven',freq:'Bi-Annual',cat:'Appliances',icon:'🍕',color:'rgba(255,149,0,.1)'},
-  {id:21,title:'Inspect Foundation',freq:'Bi-Annual',cat:'Structural',icon:'🧱',color:'rgba(134,97,67,.1)'},
-  {id:22,title:'Flush Outdoor Hose Bibs',freq:'Bi-Annual',cat:'Plumbing',icon:'🚰',color:'rgba(90,200,250,.1)'},
-  {id:23,title:'Check Electrical Panel',freq:'Bi-Annual',cat:'Electrical',icon:'⚡',color:'rgba(255,204,0,.1)'},
-  {id:24,title:'Clean Window Tracks',freq:'Bi-Annual',cat:'Interior',icon:'🪟',color:'rgba(175,82,222,.1)'},
-  {id:25,title:'Chimney Inspection & Cleaning',freq:'Annual',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)'},
-  {id:26,title:'Pressure Wash Exterior',freq:'Annual',cat:'Exterior',icon:'🚿',color:'rgba(52,199,89,.1)'},
-  {id:27,title:'Inspect & Seal Driveway',freq:'Annual',cat:'Exterior',icon:'🛣️',color:'rgba(52,199,89,.1)'},
-  {id:28,title:'Service Lawn Mower',freq:'Annual',cat:'Yard',icon:'🌿',color:'rgba(52,199,89,.1)'},
-  {id:29,title:'Inspect Sprinkler System',freq:'Annual',cat:'Yard',icon:'💦',color:'rgba(90,200,250,.1)'},
-  {id:30,title:'Check Crawl Space',freq:'Annual',cat:'Structural',icon:'🔦',color:'rgba(134,97,67,.1)'},
-  {id:31,title:'Drain & Winterize Irrigation',freq:'Annual',cat:'Yard',icon:'❄️',color:'rgba(90,200,250,.1)'},
-  {id:32,title:'Replace Refrigerator Water Filter',freq:'Annual',cat:'Appliances',icon:'💧',color:'rgba(90,200,250,.1)'},
-  {id:33,title:'Inspect Deck/Patio',freq:'Annual',cat:'Exterior',icon:'🪵',color:'rgba(52,199,89,.1)'},
-  {id:34,title:'Test Garage Door Safety',freq:'Annual',cat:'Safety',icon:'🚗',color:'rgba(255,59,48,.1)'},
-  {id:35,title:'Clean Dishwasher Filter',freq:'Annual',cat:'Appliances',icon:'🍽️',color:'rgba(0,122,255,.1)'},
-  {id:36,title:'Inspect Siding for Damage',freq:'Annual',cat:'Exterior',icon:'🏠',color:'rgba(52,199,89,.1)'},
-  {id:37,title:'Pest Inspection',freq:'Annual',cat:'Safety',icon:'🐛',color:'rgba(255,59,48,.1)'},
-  {id:38,title:'Water Heater Inspection',freq:'Annual',cat:'Plumbing',icon:'🔥',color:'rgba(255,59,48,.1)'},
-  {id:39,title:'Check AC Before Summer',freq:'Spring',cat:'HVAC',icon:'❄️',color:'rgba(0,122,255,.1)'},
-  {id:40,title:'Inspect Roof After Winter',freq:'Spring',cat:'Exterior',icon:'☂️',color:'rgba(52,199,89,.1)'},
-  {id:41,title:'Clean & Inspect Gutters',freq:'Spring',cat:'Exterior',icon:'🌧️',color:'rgba(52,199,89,.1)'},
-  {id:42,title:'Aerate & Fertilize Lawn',freq:'Spring',cat:'Yard',icon:'🌱',color:'rgba(52,199,89,.1)'},
-  {id:43,title:'Trim Trees Away from House',freq:'Spring',cat:'Yard',icon:'🌳',color:'rgba(52,199,89,.1)'},
-  {id:44,title:'Wash Windows Inside & Out',freq:'Spring',cat:'Interior',icon:'🪟',color:'rgba(175,82,222,.1)'},
-  {id:45,title:'Deep Clean Entire Home',freq:'Spring',cat:'Interior',icon:'✨',color:'rgba(175,82,222,.1)'},
-  {id:46,title:'Check Sump Pump Before Rain',freq:'Spring',cat:'Plumbing',icon:'💦',color:'rgba(90,200,250,.1)'},
-  {id:47,title:'Check Heating Before Winter',freq:'Fall',cat:'HVAC',icon:'🌡️',color:'rgba(0,122,255,.1)'},
-  {id:48,title:'Clean & Store Outdoor Furniture',freq:'Fall',cat:'Yard',icon:'🪑',color:'rgba(52,199,89,.1)'},
-  {id:49,title:'Winterize Sprinklers',freq:'Fall',cat:'Yard',icon:'❄️',color:'rgba(52,199,89,.1)'},
-  {id:50,title:'Stock Emergency Supplies',freq:'Fall',cat:'Safety',icon:'🧰',color:'rgba(255,59,48,.1)'},
-  {id:51,title:'Seal Gaps & Cracks (Exterior)',freq:'Fall',cat:'Exterior',icon:'🔧',color:'rgba(52,199,89,.1)'},
-  {id:52,title:'Drain & Store Garden Hoses',freq:'Fall',cat:'Yard',icon:'🌿',color:'rgba(52,199,89,.1)'},
-  {id:53,title:'Inspect Chimney Before Use',freq:'Fall',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)'},
-  {id:54,title:'Clean Gutters After Leaves Fall',freq:'Fall',cat:'Exterior',icon:'🍂',color:'rgba(52,199,89,.1)'},
-  {id:55,title:'Unclog Drains',freq:'As Needed',cat:'Plumbing',icon:'🚰',color:'rgba(90,200,250,.1)'},
-  {id:56,title:'Repair Drywall',freq:'As Needed',cat:'Interior',icon:'🪣',color:'rgba(175,82,222,.1)'},
-  {id:57,title:'Re-caulk Tub/Shower',freq:'As Needed',cat:'Interior',icon:'🛁',color:'rgba(175,82,222,.1)'},
-  {id:58,title:'Touch Up Paint',freq:'As Needed',cat:'Interior',icon:'🖌️',color:'rgba(175,82,222,.1)'},
-  {id:59,title:'Pest Treatment',freq:'As Needed',cat:'Safety',icon:'🐜',color:'rgba(255,59,48,.1)'},
+  {id:1,title:'Replace HVAC Air Filter',freq:'Monthly',cat:'HVAC',icon:'🌬️',color:'rgba(0,122,255,.1)',guide:{
+    what:'Replacing the air filter keeps your HVAC system running efficiently by capturing dust, pollen, pet dander, and debris before they enter the system.',
+    why:'A clogged filter forces the blower motor to work harder, driving up energy bills and shortening the system\'s life. It also degrades indoor air quality and can cause the system to overheat and shut down.',
+    where:'The filter is located either in the return air vent (a large grille, usually on a wall or ceiling) or inside the air handler unit itself, often in a utility closet or basement.',
+    how:['Turn the thermostat to OFF before you begin.','Locate the return air vent or air handler access panel.','Note the size printed on the edge of the old filter (e.g. 16x25x1).','Slide out the old filter — note the airflow direction arrow on the frame.','Insert the new filter with the arrow pointing toward the unit (away from the return duct).','Close the panel and restore power.'],
+    tools:['Replacement filter (match the size exactly)','Flashlight','Gloves (optional)'],
+    pro:'If the filter is wet, black with mold, or you notice reduced airflow even after replacement, have an HVAC technician inspect the system.'
+  }},
+  {id:2,title:'Test Smoke & CO Detectors',freq:'Monthly',cat:'Safety',icon:'🔥',color:'rgba(255,59,48,.1)',guide:{
+    what:'A quick test to confirm your smoke and carbon monoxide detectors are powered and will actually sound an alarm in an emergency.',
+    why:'Detectors with dead batteries or failed sensors give no warning during a fire or CO leak. Monthly testing takes 30 seconds and can save your life.',
+    where:'Smoke detectors should be in every bedroom, outside every sleeping area, and on each floor. CO detectors belong on each floor and near sleeping areas.',
+    how:['Stand beneath each detector.','Press and hold the TEST button until the alarm sounds — it should be loud.','If the alarm doesn\'t sound, replace the battery first and retest.','For interconnected detectors, confirm all units sound when one is triggered.','Note any units that chirp or show a fault light.'],
+    tools:['Fresh 9V or AA batteries (on hand for replacements)','Step stool if needed'],
+    pro:'Replace any detector that fails repeated tests even with new batteries, or any unit older than 10 years (smoke) or 5–7 years (CO).'
+  }},
+  {id:3,title:'Check Water Softener Salt',freq:'Monthly',cat:'Plumbing',icon:'💧',color:'rgba(90,200,250,.1)',guide:{
+    what:'Water softeners use salt to regenerate the resin beads that remove calcium and magnesium from hard water. Keeping the brine tank adequately filled ensures continuous soft water.',
+    why:'When salt runs out, the softener stops working and hard water deposits begin building up in pipes, appliances, and on fixtures — causing scale that\'s expensive to remove.',
+    where:'The brine tank is the shorter, wider tank next to the resin tank of your water softener system, typically in the basement, utility room, or garage.',
+    how:['Open the brine tank lid.','The salt level should be at least half full (roughly 4–6 inches from the top).','Break up any salt bridges — hard crusty layers that form across the top and prevent salt from reaching the water. Use a broom handle to break them up.','Add bags of softener salt if needed — use the same type already in the tank (pellets, crystals, or solar salt).','Replace the lid.'],
+    tools:['Water softener salt (pellets recommended)','Broom handle or salt-breaking tool'],
+    pro:'If your water feels hard even with adequate salt levels, have a technician check the resin bed — it may need regeneration or replacement.'
+  }},
+  {id:4,title:'Clean Range Hood Filter',freq:'Monthly',cat:'Kitchen',icon:'🍳',color:'rgba(255,149,0,.1)',guide:{
+    what:'The range hood filter traps grease-laden air from cooking before it enters the exhaust duct or recirculates into the kitchen.',
+    why:'A saturated filter is a fire hazard — accumulated grease can ignite from stovetop flames. It also causes the hood to lose suction, leaving cooking odors and steam in your kitchen.',
+    where:'Directly above the cooktop, inside the range hood. The filter(s) slide or snap out from the underside.',
+    how:['Remove the filter by sliding it forward or pressing the release tab.','Soak it in very hot water with a strong degreaser or dish soap for 10–15 minutes.','Scrub with a brush to loosen baked-on grease, then rinse thoroughly.','Air dry completely before reinstalling — a wet filter reduces airflow.','Reinstall the filter, making sure it seats fully.'],
+    tools:['Hot water','Degreaser or dish soap (Dawn works well)','Stiff scrub brush','Sink or large basin'],
+    pro:'If the metal mesh is warped, torn, or no longer cleans up well, replace it — replacement filters are inexpensive and available by model number.'
+  }},
+  {id:5,title:'Run Water in Unused Drains',freq:'Monthly',cat:'Plumbing',icon:'🚿',color:'rgba(90,200,250,.1)',guide:{
+    what:'Running water in infrequently used drains (guest bathroom, utility sink, floor drain) refills the P-trap — the curved pipe section that holds water and blocks sewer gas.',
+    why:'P-traps can evaporate dry over weeks without use. A dry trap allows hydrogen sulfide and methane from the sewer system to enter your home — the source of that "rotten egg" smell.',
+    where:'Guest bathrooms, basement floor drains, utility sinks, infrequently used showers or tubs, and any drain that isn\'t used regularly.',
+    how:['Run every sink, tub, and shower for 20–30 seconds.','Flush toilets in unused bathrooms.','For floor drains, pour about a quart of water slowly down the drain.','If a drain continues to smell even after running water, add a cup of water with a few drops of mineral oil — it slows evaporation.'],
+    tools:['Water','Mineral oil (optional)'],
+    pro:'Persistent sewer smell even after filling traps can indicate a broken P-trap or venting issue — have a plumber inspect.'
+  }},
+  {id:6,title:'Inspect Fire Extinguishers',freq:'Monthly',cat:'Safety',icon:'🧯',color:'rgba(255,59,48,.1)',guide:{
+    what:'A visual check to confirm your fire extinguishers are charged, accessible, and in working condition.',
+    why:'An uncharged or expired extinguisher is useless in a fire. Monthly checks take under a minute and ensure you\'re never caught without a working unit.',
+    where:'Kitchen (most critical), garage, laundry room, near the electrical panel, and any workshop area. Mount them at eye level in accessible locations.',
+    how:['Check that the pressure gauge needle is in the green zone.','Inspect the pin and tamper seal — the pin should be in place and the seal unbroken.','Look for physical damage: dents, rust, cracked hose, or clogged nozzle.','Make sure the unit is in its mount and not obstructed.','Record the last inspection date on the tag.'],
+    tools:['Pen (to update the inspection tag)'],
+    pro:'Have extinguishers professionally inspected annually and hydrostatically tested every 5–12 years per the manufacturer\'s label. Replace any unit older than 12 years.'
+  }},
+  {id:7,title:'Clean Garbage Disposal',freq:'Monthly',cat:'Kitchen',icon:'🌀',color:'rgba(255,149,0,.1)',guide:{
+    what:'Cleaning the garbage disposal removes food residue, grease, and bacteria that accumulate on the grinding components and underside of the splash guard — the source of disposal odors.',
+    why:'Neglected disposals develop persistent odors and can harbor bacteria. Regular cleaning extends the unit\'s life and keeps the kitchen smelling fresh.',
+    where:'Under the kitchen sink — the disposal is the cylindrical unit attached to the sink drain. You\'ll clean it from above through the drain opening.',
+    how:['Turn the disposal OFF at the switch.','Remove and scrub the rubber splash guard with dish soap and an old toothbrush — especially the underside.','With the disposal off, drop 6–8 ice cubes down the drain, then a handful of coarse salt.','Turn the disposal on and run cold water — the ice and salt scour the grinding ring.','Follow with a quartered lemon or orange peel while it\'s running to deodorize.','Alternatively, pour half cup baking soda then half cup vinegar down the drain, wait 5 minutes, then flush with hot water.'],
+    tools:['Ice cubes','Coarse salt','Lemon or orange peel','Dish soap','Old toothbrush'],
+    pro:'If the disposal hums but won\'t spin, it\'s likely jammed — use the hex wrench in the hole at the bottom to manually turn it free. If it leaks from the bottom, the internal seals have failed and replacement is needed.'
+  }},
+  {id:8,title:'Check Sump Pump',freq:'Monthly',cat:'Plumbing',icon:'💦',color:'rgba(90,200,250,.1)',guide:{
+    what:'A quick test to verify your sump pump is operational and ready to handle water intrusion before rain or snowmelt occurs.',
+    why:'Sump pumps sit idle for weeks and can seize, trip a breaker, or lose their prime. A failed pump during heavy rain means a flooded basement — often thousands of dollars in damage.',
+    where:'The sump pump sits inside a sump pit, which is a hole in the lowest point of your basement or crawl space floor, usually covered with a lid.',
+    how:['Remove the pit cover.','Slowly pour 5 gallons of water into the pit using a bucket.','The float should rise and trigger the pump — listen for the motor to activate.','Confirm water is being discharged through the exit pipe (usually to outdoors or a drain).','Watch that the water level drops and the pump shuts off automatically.','Replace the pit cover.'],
+    tools:['Bucket (5 gallons)','Water'],
+    pro:'If the pump runs but water doesn\'t drop, the check valve or discharge line may be clogged or frozen. If it doesn\'t run at all, check the outlet power and circuit breaker. Have a plumber service it if issues persist.'
+  }},
+  {id:9,title:'Deep Clean Refrigerator Coils',freq:'Quarterly',cat:'Appliances',icon:'❄️',color:'rgba(90,200,250,.1)',guide:{
+    what:'Vacuuming the condenser coils on your refrigerator removes dust and pet hair that insulates the coils and forces the compressor to work overtime.',
+    why:'Dirty coils can increase energy use by 25–30% and significantly shorten the compressor\'s life. This single task can add years to your refrigerator.',
+    where:'On most refrigerators, coils are behind the lower front kickplate or at the back of the unit. Newer models often have them at the bottom-rear.',
+    how:['Unplug the refrigerator (or turn off the circuit).','Pull the fridge away from the wall if coils are at the back.','Remove the front kickplate by snapping or unscrewing it.','Use a vacuum with a crevice tool or a coil brush to remove dust from the coils.','Vacuum the floor underneath — dust there circulates back to the coils.','Reinstall the kickplate, push the fridge back, and plug it in.'],
+    tools:['Vacuum with crevice or brush attachment','Refrigerator coil brush (inexpensive, from hardware stores)'],
+    pro:'If you hear unusual running sounds or the fridge isn\'t holding temperature after cleaning, have an appliance technician inspect the compressor and refrigerant level.'
+  }},
+  {id:10,title:'Inspect Weatherstripping',freq:'Quarterly',cat:'Exterior',icon:'🚪',color:'rgba(52,199,89,.1)',guide:{
+    what:'Weatherstripping is the flexible seal around doors and windows that prevents drafts, moisture, and insects from entering through the gaps in the frame.',
+    why:'Worn weatherstripping is one of the biggest sources of energy loss in a home. A bad seal on an exterior door is equivalent to leaving a small window open all winter.',
+    where:'Check all exterior doors (front, back, garage entry), sliding glass doors, and operable windows. Focus on the bottom sweep and the compression strip around the frame.',
+    how:['On a bright day, close the door and check for light coming through the edges — light means air is getting through too.','Run your hand along the edges on a cold day to feel for drafts.','Inspect the strip visually for cracks, tears, compression, or missing sections.','For foam or vinyl strips: peel off the old and press on new adhesive-backed weatherstripping.','For door sweeps (bottom of door): unscrew the old sweep and screw on the new one.'],
+    tools:['Replacement weatherstripping or door sweep (measure the old first)','Scissors','Screwdriver'],
+    pro:'If doors are visibly warped or won\'t latch correctly, the issue may be the frame or hinge — a contractor may need to rehang the door.'
+  }},
+  {id:11,title:'Flush Water Heater Sediment',freq:'Quarterly',cat:'Plumbing',icon:'🔥',color:'rgba(255,59,48,.1)',guide:{
+    what:'Flushing drains sediment — mineral deposits from hard water — that settles at the bottom of your water heater tank.',
+    why:'Sediment insulates the burner or heating element from the water, forcing the heater to work harder. It causes rumbling noises, reduces hot water volume, and shortens the tank\'s life.',
+    where:'Your water heater is typically in a utility closet, basement, or garage. The drain valve looks like a hose bib at the bottom of the tank.',
+    how:['Turn the thermostat to the PILOT or VACATION setting (gas) or OFF (electric).','Connect a garden hose to the drain valve and run it to a floor drain or outside.','Turn off the cold water supply to the heater.','Open a hot water faucet somewhere in the house to prevent a vacuum.','Open the drain valve and let it run until the water runs clear (usually 2–5 gallons).','Close the drain valve, disconnect the hose, turn the supply back on, and restore the thermostat.'],
+    tools:['Garden hose','Bucket or floor drain access'],
+    pro:'If the drain valve leaks after closing or the water never runs clear, have a plumber assess the tank — heavy sediment may mean it\'s near end of life.'
+  }},
+  {id:12,title:'Test GFCI Outlets',freq:'Quarterly',cat:'Electrical',icon:'⚡',color:'rgba(255,204,0,.1)',guide:{
+    what:'GFCI (Ground Fault Circuit Interrupter) outlets detect potentially dangerous ground faults and cut power in milliseconds. Testing confirms they\'ll work when needed.',
+    why:'A GFCI outlet that trips but won\'t reset, or one that doesn\'t trip at all, provides no protection. Faulty GFCIs near water are a serious electrocution risk.',
+    where:'Required by code in bathrooms, kitchens (within 6 ft of a sink), garages, outdoor outlets, and near pools or wet bars. Look for the TEST and RESET buttons in the middle of the outlet face.',
+    how:['Plug in a lamp or device to the GFCI outlet.','Press the TEST button — the power should immediately cut off (lamp goes out).','Press RESET — power should restore.','If pressing TEST doesn\'t cut power, the outlet is faulty and needs replacement.','Note that one GFCI outlet often protects multiple downstream outlets — test all outlets on the circuit after tripping.'],
+    tools:['A small lamp or phone charger'],
+    pro:'Replacing a faulty GFCI outlet is a straightforward DIY task. However, if outlets repeatedly trip without cause or wiring in the box looks damaged, call a licensed electrician.'
+  }},
+  {id:13,title:'Inspect Caulking (Bath/Kitchen)',freq:'Quarterly',cat:'Interior',icon:'🛁',color:'rgba(175,82,222,.1)',guide:{
+    what:'Caulk seals the gap between the tub, shower, or sink and the surrounding tile or wall, preventing water from seeping behind the surface where it causes mold and structural damage.',
+    why:'Caulk cracks, shrinks, and peels over time. Even a small gap allows water to enter the wall cavity — leading to mold, rotted framing, and costly repairs that are far more expensive than a $6 tube of caulk.',
+    where:'Around the perimeter of tubs and showers (where the tub meets the wall), around kitchen sinks, and around bathroom sinks.',
+    how:['Look for gaps, cracks, discoloration, or areas where caulk has pulled away from the surface.','If recaulking is needed: use a utility knife or caulk remover tool to scrape out all old caulk.','Clean the surface with rubbing alcohol and let it dry completely.','Apply a bead of 100% silicone or tub-and-tile caulk along the joint.','Smooth it with a wet finger or caulk tool. Let cure per instructions before exposing to water.'],
+    tools:['Utility knife or caulk remover tool','Silicone or tub-and-tile caulk','Caulk gun','Rubbing alcohol','Rag'],
+    pro:'Black or green mold visible behind peeling caulk may indicate water has already entered the wall. Have a contractor inspect for moisture damage before recaulking.'
+  }},
+  {id:14,title:'Clean Dryer Vent',freq:'Quarterly',cat:'Appliances',icon:'👕',color:'rgba(52,199,89,.1)',guide:{
+    what:'Cleaning the dryer vent duct removes accumulated lint from the full length of the duct — from the back of the dryer to where it exits the house.',
+    why:'Lint buildup in dryer vents is the leading cause of home dryer fires (nearly 3,000 per year). It also makes your dryer work harder and run longer, wasting energy and wear on the machine.',
+    where:'The vent duct connects to the back of the dryer and runs to an exhaust vent on an exterior wall, typically in the laundry room.',
+    how:['Unplug the dryer and pull it away from the wall.','Disconnect the duct from the back of the dryer.','Use a dryer vent brush kit to clean the full length of the duct, working from both ends.','Vacuum lint from around the dryer exhaust port.','Check the exterior vent flap — it should open freely and not be blocked by lint or debris.','Reconnect the duct, push the dryer back, and plug it in.'],
+    tools:['Dryer vent brush kit (flexible rods + brush)','Vacuum with hose attachment','Screwdriver (if duct is clamped)'],
+    pro:'If drying time has increased significantly or the duct run is very long (over 25 ft) or has multiple bends, have a professional vent cleaning service clean it with a rotary brush system.'
+  }},
+  {id:15,title:'Inspect Attic for Leaks/Pests',freq:'Quarterly',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)',guide:{
+    what:'A visual inspection of the attic for signs of water intrusion (stains, wet insulation, mold) or pest activity (droppings, nesting, chewed wood).',
+    why:'Roof leaks often first show up in the attic — catching them early prevents the leak from reaching the ceiling below and causing far more damage. Rodents and insects can cause serious structural damage if left unchecked.',
+    where:'Access the attic through the hatch in a hallway ceiling, or a door in an upper floor closet.',
+    how:['Bring a good flashlight or headlamp.','Look at the roof decking (the wood under the shingles) for dark water stains, wet spots, or daylight coming through.','Inspect the insulation for wet clumps, staining, or compressed areas.','Check rafters and framing for mold (black or dark spots) or rot.','Look for rodent droppings, nesting material, or chewed wood/insulation.','Inspect where the roof meets walls (valleys and flashings) — leaks typically enter at these transition points.'],
+    tools:['Flashlight or headlamp','Dust mask','Gloves'],
+    pro:'Water staining on rafters, visible mold, or signs of active pest infestation all warrant professional assessment — a roofer for leaks and a pest control company for infestations.'
+  }},
+  {id:16,title:'Check Window/Door Seals',freq:'Quarterly',cat:'Exterior',icon:'🪟',color:'rgba(52,199,89,.1)',guide:{
+    what:'Inspecting the caulk and seals around window and door frames where they meet the exterior siding or trim.',
+    why:'Gaps in exterior caulking allow water to penetrate the wall cavity — leading to rot, mold, and expensive structural damage. They also allow air infiltration that raises heating and cooling costs.',
+    where:'Outside the house: check where window frames meet the siding, around door trim, and at the corners where siding sections meet.',
+    how:['Walk the exterior of the house on a dry day.','Look for cracked, shrinking, or missing caulk around all window and door frames.','Feel for sponginess in the trim or siding, which indicates moisture has already entered.','Remove any failing caulk with a putty knife and clean the surface.','Apply exterior-grade paintable caulk (polyurethane or siliconized latex) and smooth with a wet finger.','Allow to cure before painting over if needed.'],
+    tools:['Exterior caulk (polyurethane or siliconized latex)','Caulk gun','Putty knife','Damp rag'],
+    pro:'If siding or trim feels soft or spongy, water has likely already entered the wall. Have a contractor assess for rot before sealing over the problem.'
+  }},
+  {id:17,title:'Service HVAC System',freq:'Bi-Annual',cat:'HVAC',icon:'❄️',color:'rgba(0,122,255,.1)',guide:{
+    what:'A professional tune-up of your heating and cooling system — performed twice a year (before cooling season and before heating season) to inspect, clean, and adjust all major components.',
+    why:'HVAC systems are your home\'s largest energy consumer. Properly serviced systems use 15–20% less energy, last significantly longer, and are far less likely to fail during a heat wave or cold snap.',
+    where:'The air handler or furnace (typically in a utility closet, basement, or attic) and the outdoor condenser or heat pump unit.',
+    how:['Schedule a service appointment with a licensed HVAC technician — ideally in spring (before AC season) and fall (before heating season).','The technician will clean coils, check refrigerant levels, inspect the heat exchanger, lubricate moving parts, and test all controls.','Replace your air filter before or right after the visit.','Ask for a written report of what was found and any recommended repairs.'],
+    tools:['N/A — this is a professional service task'],
+    pro:'This task is intentionally professional. Attempting to check refrigerant, clean evaporator coils, or inspect the heat exchanger yourself can void warranties and cause damage. Budget $80–$150 per visit.'
+  }},
+  {id:18,title:'Replace Smoke Detector Batteries',freq:'Bi-Annual',cat:'Safety',icon:'🔋',color:'rgba(255,59,48,.1)',guide:{
+    what:'Replacing batteries in all smoke and CO detectors on a twice-yearly schedule — typically aligned with daylight saving time changes.',
+    why:'The chirping that indicates a low battery often happens at 2am. Building in a proactive replacement schedule means you\'re never caught with dead batteries during a real emergency.',
+    where:'Every smoke detector (bedroom, hallway, each floor) and every CO detector in the home.',
+    how:['Use daylight saving time changes as your reminder (spring forward / fall back).','Remove the detector from its mount by twisting counterclockwise or pressing a tab.','Open the battery compartment and replace with fresh batteries (usually 9V or AA).','Reinstall and press the test button to confirm it works.','Write the date on the battery with a marker so you know when they were replaced.'],
+    tools:['Fresh batteries (9V or AA — check your detector models beforehand)','Step stool','Marker'],
+    pro:'If a detector repeatedly chirps within days of a battery change, the unit itself is failing and needs to be replaced. Replace any unit older than 10 years (smoke) or 5–7 years (CO).'
+  }},
+  {id:19,title:'Inspect Roof & Gutters',freq:'Bi-Annual',cat:'Exterior',icon:'🏠',color:'rgba(52,199,89,.1)',guide:{
+    what:'A ground-level and/or ladder inspection of the roof surface, flashings, and gutters twice a year — typically spring and fall.',
+    why:'Small roof problems (a few missing shingles, cracked flashing) become large ones quickly once water finds a way in. Catching issues early costs hundreds; ignoring them costs thousands.',
+    where:'Start with a ground-level walk around the house with binoculars. A closer look requires a ladder to the eaves level — you don\'t need to walk on the roof.',
+    how:['Look for missing, curling, or cracked shingles.','Inspect flashing (metal strips) around the chimney, skylights, vents, and where the roof meets walls — look for gaps, rust, or lifting.','Check gutters for sagging, separation from the fascia, and damage.','Look inside gutters for shingle granules — significant granule loss means shingles are aging.','Check downspouts — ensure they extend at least 4 ft away from the foundation.'],
+    tools:['Binoculars','Ladder (for gutter-level access)','Gloves'],
+    pro:'Walk on the roof only if it\'s dry and low-pitched, and only with proper footwear. For steep or high roofs, hire a licensed roofer to inspect — the risk of injury is not worth it.'
+  }},
+  {id:20,title:'Deep Clean Oven',freq:'Bi-Annual',cat:'Appliances',icon:'🍕',color:'rgba(255,149,0,.1)',guide:{
+    what:'Removing baked-on grease and food residue from the oven interior, including the door glass, racks, and broiler drawer.',
+    why:'Grease buildup is a fire hazard and causes smoke when the oven runs. Regular cleaning also maintains accurate temperature and extends the appliance\'s life.',
+    where:'Your oven — both the main cavity and the broiler compartment below (if applicable).',
+    how:['Remove the oven racks and soak them in hot soapy water in the tub or a large basin.','For a self-cleaning oven: run the self-clean cycle. Remove everything first and expect 2–4 hours with a strong burning smell — ensure ventilation.','For manual cleaning: apply oven cleaner to the interior (avoiding the heating element) or a paste of baking soda and water. Let sit overnight.','Wipe out all residue with a damp cloth. Use a plastic scraper for stubborn spots.','Clean the door glass with baking soda paste and a sponge.','Dry and reinstall the racks.'],
+    tools:['Oven cleaner or baking soda','Sponge or scrubbing pad','Plastic scraper','Gloves','Old towels'],
+    pro:'If the self-clean cycle causes the oven to error, shut off, or produces excessive smoke, have an appliance technician inspect it before using it again.'
+  }},
+  {id:21,title:'Inspect Foundation',freq:'Bi-Annual',cat:'Structural',icon:'🧱',color:'rgba(134,97,67,.1)',guide:{
+    what:'Walking the exterior and interior perimeter of your foundation to look for new cracks, water staining, or shifting.',
+    why:'Foundations move subtly over time. Catching new or widening cracks early allows for simple waterproofing fixes. Ignored cracks can allow water intrusion and, in serious cases, structural compromise.',
+    where:'Outside: the visible concrete or block at the base of your home. Inside: the basement walls or, if you have a crawl space, the foundation walls visible from the access hatch.',
+    how:['Walk the exterior perimeter after rain — look for water pooling against the foundation (it should drain away).','Inspect concrete or block for cracks — note their orientation (horizontal cracks are more serious than vertical ones).','Mark any cracks with a pencil and date to track if they\'re growing.','Inside, check for white powdery deposits (efflorescence), water staining, or damp spots.','Ensure gutters and downspouts direct water well away from the foundation.'],
+    tools:['Flashlight','Pencil (to mark cracks)','Camera to document findings'],
+    pro:'Horizontal cracks in block or brick foundations, stair-step cracks in mortar, or any crack wider than 1/4 inch should be assessed by a structural engineer or foundation specialist — don\'t wait.'
+  }},
+  {id:22,title:'Flush Outdoor Hose Bibs',freq:'Bi-Annual',cat:'Plumbing',icon:'🚰',color:'rgba(90,200,250,.1)',guide:{
+    what:'Checking and flushing your outdoor hose bibs (spigots) twice a year — once to prep for spring use and once to winterize before freezing temperatures.',
+    why:'Frozen hose bibs can crack the pipe inside the wall, leading to a flood when the ice thaws. Testing in spring catches any damage from the winter.',
+    where:'The exterior wall of your home — typically on the side or rear, close to the ground. Most homes have 1–3 of them.',
+    how:['Spring: attach a hose and turn on the water. Check for full flow and look for any dripping at the stem (behind the handle). Inspect the area inside the wall for moisture.','Fall: disconnect all hoses completely — a connected hose traps water and defeats frost-proof designs.','Fall: turn off the indoor shutoff valve for the hose bib if your home has one (check in the basement or utility room along the exterior wall).','Open the outdoor bib to drain remaining water, then close it.'],
+    tools:['Hose for testing','Adjustable wrench if stem is loose'],
+    pro:'If water drips from the stem when in use, the packing washer needs replacing — a simple fix. If you find water-damaged drywall near an exterior wall after winter, the pipe may have frozen and burst.'
+  }},
+  {id:23,title:'Check Electrical Panel',freq:'Bi-Annual',cat:'Electrical',icon:'⚡',color:'rgba(255,204,0,.1)',guide:{
+    what:'A visual inspection of the main electrical panel (breaker box) for signs of problems — without opening or touching any wiring.',
+    why:'The electrical panel is the heart of your home\'s electrical system. Tripped breakers, corrosion, or heat damage can indicate overloading, faulty wiring, or fire risk.',
+    where:'Usually in a utility room, basement, garage, or hallway. It\'s a metal box, often gray or tan, mounted to the wall with a hinged door.',
+    how:['Open the panel door (the outer cover, not the inner panel with wiring).','Look for any breakers in the middle "tripped" position — they should be fully on or fully off.','Note any signs of rust, corrosion, scorch marks, or unusual odors (burning smell).','Check that all breakers are labeled — correct labeling is important for emergencies.','Feel the outside of the box for unusual warmth (do not touch the wiring).'],
+    tools:['Flashlight'],
+    pro:'Any scorching, burning smell, melted wiring, or a breaker that won\'t stay on calls for a licensed electrician immediately — do not investigate further yourself. Double-tap breakers (two wires on one breaker) also require an electrician to correct.'
+  }},
+  {id:24,title:'Clean Window Tracks',freq:'Bi-Annual',cat:'Interior',icon:'🪟',color:'rgba(175,82,222,.1)',guide:{
+    what:'Clearing dirt, dead insects, and debris from window tracks and weep holes, and lubricating the tracks for smooth operation.',
+    why:'Dirty tracks prevent windows from sealing properly (air leaks), allow water to back up (which can enter the wall), and cause the window to stick — making it hard to open in an emergency.',
+    where:'The horizontal channels that the window sashes slide in, both at the top and bottom.',
+    how:['Vacuum the track with a crevice tool to remove loose debris.','Use an old toothbrush or cotton swabs to scrub the track with a paste of baking soda and dish soap, or a foaming bathroom cleaner.','Wipe clean with a damp cloth.','Clear the weep holes (small slots in the bottom track or frame exterior) with a toothpick or skewer — these drain rainwater.','Apply a thin coat of silicone spray lubricant to the tracks (not WD-40 — it attracts dirt).'],
+    tools:['Vacuum with crevice tool','Old toothbrush','Cleaning solution','Silicone spray lubricant','Cotton swabs'],
+    pro:'Foggy or cracked glass between double panes means the seal has failed — the window unit needs replacement, not cleaning.'
+  }},
+  {id:25,title:'Chimney Inspection & Cleaning',freq:'Annual',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)',guide:{
+    what:'An annual professional inspection and cleaning of the chimney flue, fireplace, and firebox to remove creosote and check for structural defects.',
+    why:'Creosote — a byproduct of burning wood — builds up inside the flue and is highly flammable. Chimney fires kill dozens of people and cause millions in damage annually. This is one task where DIY is not appropriate.',
+    where:'Your fireplace and the chimney that runs from the firebox through the roof.',
+    how:['Schedule a certified chimney sweep (CSIA-certified) once a year, ideally before the first fire of fall.','The sweep will inspect the flue interior with a camera, check the damper, firebox, and crown, and remove creosote buildup.','They\'ll issue a written report noting any damage or safety concerns.','Ask them to inspect the chimney cap and flashing while on the roof.'],
+    tools:['N/A — professional service'],
+    pro:'This task should always be done by a CSIA-certified professional. If you see loose mortar in the firebox, a cracked flue liner, or a white stain (efflorescence) on the exterior chimney, do not use the fireplace until it\'s inspected.'
+  }},
+  {id:26,title:'Pressure Wash Exterior',freq:'Annual',cat:'Exterior',icon:'🚿',color:'rgba(52,199,89,.1)',guide:{
+    what:'Using a pressure washer to clean siding, walkways, the driveway, deck, and other exterior surfaces of dirt, mold, mildew, and algae.',
+    why:'Mold, algae, and dirt staining aren\'t just cosmetic — they can degrade siding, wood, and concrete over time. Annual cleaning also lets you see damage that was hidden under grime.',
+    where:'Siding (all sides), front walkway, driveway, deck or patio, fencing.',
+    how:['Rent or use a pressure washer (1,500–2,500 PSI is sufficient for most siding).','Start with the lowest pressure setting and test on an inconspicuous area.','Work top to bottom and keep the nozzle moving — don\'t hold it in one spot.','Keep the nozzle at least 12 inches from the surface on wood or vinyl siding.','For stubborn mold: use a house wash solution in the machine\'s detergent tank, let dwell 5 minutes, then rinse.','Allow surfaces to dry before painting or sealing.'],
+    tools:['Pressure washer (rental or owned)','House wash detergent (for mold/mildew)','Safety glasses','Non-slip shoes'],
+    pro:'Pressure washing can damage old paint, force water under siding, or etch soft wood or brick if misused. If you\'re unsure about a surface\'s condition, test carefully or hire a professional. Never pressure wash near electrical fixtures or vents.'
+  }},
+  {id:27,title:'Inspect & Seal Driveway',freq:'Annual',cat:'Exterior',icon:'🛣️',color:'rgba(52,199,89,.1)',guide:{
+    what:'Inspecting your asphalt or concrete driveway for cracks and applying sealer to protect the surface.',
+    why:'Water enters cracks, freezes, and expands — rapidly widening them into potholes. Sealing prevents this cycle and extends the driveway\'s life significantly.',
+    where:'Your driveway surface, including the edges and any expansion joints.',
+    how:['Inspect for cracks, heaving, or depressions.','Fill any cracks with driveway crack filler (asphalt-based for asphalt driveways, polyurethane for concrete). Let cure per instructions.','Clean the surface with a pressure washer or stiff broom and let it dry fully.','Apply asphalt sealer with a squeegee or roller, working one half at a time.','Allow 24–48 hours to cure before driving on it.','Best done in warm, dry weather (above 50 degrees F).'],
+    tools:['Driveway crack filler','Asphalt sealer (for asphalt driveways)','Squeegee or roller','Pressure washer or broom','Gloves'],
+    pro:'Large areas of crumbling asphalt, significant heaving, or widespread cracking in concrete indicate resurfacing or replacement — a contractor\'s job. For concrete driveways, use a concrete-specific sealer, not asphalt products.'
+  }},
+  {id:28,title:'Service Lawn Mower',freq:'Annual',cat:'Yard',icon:'🌿',color:'rgba(52,199,89,.1)',guide:{
+    what:'Preparing your lawn mower for the mowing season — changing the oil, replacing the spark plug and air filter, and sharpening the blade.',
+    why:'A well-maintained mower starts reliably, uses less fuel, and cuts cleanly — a sharp blade cuts grass cleanly instead of tearing it, reducing disease and stress on the lawn.',
+    where:'Your garage, driveway, or wherever the mower is stored.',
+    how:['Run the mower until it\'s out of fuel, or use a fuel stabilizer if storing.','Disconnect the spark plug wire before doing anything else (safety).','Drain the old oil and replace with the manufacturer-specified oil.','Replace the spark plug (gapped to spec) and air filter.','Tilt the mower on its side (carburetor side up) and remove the blade bolt.','Sharpen the blade with a metal file or bench grinder, maintaining the original bevel angle.','Reinstall the blade and reconnect the spark plug.'],
+    tools:['Oil (correct weight for your mower)','Spark plug (match your mower model)','Air filter','Metal file or angle grinder','Wrench set','Gloves'],
+    pro:'If the mower shakes excessively, smokes heavily, or won\'t start after servicing, a small engine repair shop can diagnose carburetor and ignition issues inexpensively.'
+  }},
+  {id:29,title:'Inspect Sprinkler System',freq:'Annual',cat:'Yard',icon:'💦',color:'rgba(90,200,250,.1)',guide:{
+    what:'Running each zone of your sprinkler system and visually checking every head to confirm full coverage, correct spray pattern, and no leaks.',
+    why:'Broken heads, blocked nozzles, or misaligned zones waste enormous amounts of water and leave dry spots. Finding issues early prevents expensive landscape damage.',
+    where:'All zones of your irrigation system — activate each from the controller and walk each zone while it runs.',
+    how:['Set the controller to run each zone manually, one at a time.','Walk the zone while it\'s running.','Check each head: does it pop up fully? Does it spray in the correct pattern? Is the arc adjusted properly?','Look for heads that spray on sidewalks, foundations, or the house — realign them.','Check for pooling water near heads (indicates a leak below the head).','Adjust the run time per zone based on current weather and season.'],
+    tools:['Flat-head screwdriver (for adjusting spray arc)','Irrigation head key (for rotor heads)'],
+    pro:'If a zone doesn\'t run or a valve leaks, an irrigation technician can diagnose solenoid and valve issues. System-wide low pressure may indicate a mainline break.'
+  }},
+  {id:30,title:'Check Crawl Space',freq:'Annual',cat:'Structural',icon:'🔦',color:'rgba(134,97,67,.1)',guide:{
+    what:'An annual inspection of the crawl space for moisture, standing water, mold, pest activity, and insulation condition.',
+    why:'Crawl spaces are out of sight and mind — which is why moisture problems, pest infestations, and failing vapor barriers can go undetected for years. What lives in your crawl space affects the air you breathe and the floors you walk on.',
+    where:'Access through the crawl space hatch — typically a small door in an exterior foundation wall, a floor hatch, or inside a closet.',
+    how:['Wear a respirator, gloves, knee pads, and old clothes — crawl spaces are dirty.','Bring a bright flashlight or headlamp.','Check for standing water or water staining on the soil or vapor barrier.','Inspect the vapor barrier (plastic sheeting on the ground) for tears or gaps — it should cover all exposed soil.','Look at the underside of the floor structure for mold (dark staining), rot, or sagging.','Check for pest signs: droppings, tunneling in insulation, or mud tubes (termites).','Inspect insulation — it should be intact and in contact with the subfloor.'],
+    tools:['Headlamp or flashlight','Respirator (N95 or better)','Gloves','Knee pads or old clothes'],
+    pro:'Standing water, significant mold on framing, termite mud tubes, or a damaged vapor barrier all require professional attention — a waterproofer, pest control company, or contractor depending on the issue.'
+  }},
+  {id:31,title:'Drain & Winterize Irrigation',freq:'Annual',cat:'Yard',icon:'❄️',color:'rgba(90,200,250,.1)',guide:{
+    what:'Removing all water from the irrigation system before freezing temperatures arrive to prevent cracked pipes, fittings, and heads.',
+    why:'Water expands when it freezes. Any water left in irrigation lines will freeze and crack PVC pipe or poly tubing — often in multiple places. A winterization visit is far cheaper than a spring repair bill.',
+    where:'Your entire in-ground sprinkler or drip irrigation system.',
+    how:['Shut off the water supply to the irrigation system at the backflow preventer or shutoff valve.','Hire an irrigation company to blow out the system with compressed air (the preferred method) — they have the compressor and know the proper sequence.','If blowing out yourself: connect a compressor to the blow-out port, start from the zone farthest from the compressor, and run each zone briefly until no water sprays. Never stay behind the heads while blowing out.','After blowout, leave the backflow preventer valves at 45 degrees (half-open) to prevent cracking if any residual water freezes.','Insulate the backflow preventer with foam pipe insulation.'],
+    tools:['N/A for professional service','Air compressor (50+ CFM for DIY blowout)','Foam pipe insulation wrap'],
+    pro:'Improper blowout technique can damage heads and fittings. Unless you\'ve done this before, hiring an irrigation company ($50–$100) is the safer call.'
+  }},
+  {id:32,title:'Replace Refrigerator Water Filter',freq:'Annual',cat:'Appliances',icon:'💧',color:'rgba(90,200,250,.1)',guide:{
+    what:'Replacing the internal water filter in your refrigerator — the filter that cleans water for the ice maker and water dispenser.',
+    why:'Filters have a finite capacity. After 6–12 months (or 300–500 gallons), they stop effectively removing contaminants and can even begin harboring bacteria. Ignoring the filter light means you\'re drinking unfiltered water.',
+    where:'Most refrigerator filters are located inside the upper-right corner of the fridge compartment, in the base grille below the doors, or inside the back wall of the fridge. Check your owner\'s manual.',
+    how:['Order the correct replacement filter for your refrigerator model (use the model number inside the door).','Turn off the ice maker.','Twist or push to release the old filter — have a small towel ready for drips.','Insert the new filter and twist or push to lock.','Flush 2–3 gallons through the dispenser to clear air and carbon dust.','Reset the filter indicator light (usually hold the "Filter Reset" button for 3 seconds).','Turn the ice maker back on.'],
+    tools:['Correct replacement filter for your model','Small towel for drips'],
+    pro:'If water flow from the dispenser is low even with a new filter, a clogged water line or a failing solenoid valve may be the cause — have an appliance technician inspect it.'
+  }},
+  {id:33,title:'Inspect Deck/Patio',freq:'Annual',cat:'Exterior',icon:'🪵',color:'rgba(52,199,89,.1)',guide:{
+    what:'An annual structural and surface inspection of your deck or patio for safety hazards and weathering damage.',
+    why:'Deck collapses cause hundreds of injuries every year. Wood rot, corroded fasteners, and failing ledger connections are the most common culprits — all invisible until something fails.',
+    where:'All parts of the deck: the surface boards, joists, posts, footings, ledger board (where the deck connects to the house), railings, and stairs.',
+    how:['Walk the deck and check for soft spots, bouncy boards, or popping fasteners.','Probe wood with a screwdriver — soft wood that the screwdriver sinks into easily indicates rot.','Check the ledger board (against the house wall) for rot and that the lag bolts are still tight.','Inspect all post bases — look for rot at the bottom of posts, especially where they meet the ground or concrete.','Shake railings — they should not wobble.','Check deck boards for splintering and large gaps.','Apply deck stain or sealer if water no longer beads on the surface.'],
+    tools:['Screwdriver (for probing wood)','Stain or sealer if refinishing','Deck brush'],
+    pro:'Rot in structural members (joists, posts, ledger), loose or missing joist hangers, or concrete footings that have shifted need a contractor to assess and repair before the deck is used.'
+  }},
+  {id:34,title:'Test Garage Door Safety',freq:'Annual',cat:'Safety',icon:'🚗',color:'rgba(255,59,48,.1)',guide:{
+    what:'Testing the auto-reverse safety feature of your garage door opener — the mechanism that prevents the door from closing on a person, pet, or object.',
+    why:'Garage doors weigh 200–400 lbs. A door that doesn\'t reverse can seriously injure or kill. The Consumer Product Safety Commission estimates thousands of injuries annually from garage doors.',
+    where:'Your garage door and opener unit mounted to the ceiling track.',
+    how:['Place a 2x4 board flat on the ground in the center of the door opening.','Press the close button — the door should reverse immediately when it contacts the board.','If it doesn\'t reverse, adjust the down-force limit on the opener (there\'s typically a dial or screw on the unit) and retest.','Also test the photoelectric sensors: wave your hand through the beam while the door is closing — it should reverse immediately.','Clean the sensor "eyes" (small boxes on each side near the floor) with a soft cloth — dirty sensors cause false failures.'],
+    tools:['2x4 board'],
+    pro:'If the door does not reverse reliably after adjustment, the opener should be replaced. An overhead door company can also inspect the springs and cables — these are under extreme tension and should never be adjusted yourself.'
+  }},
+  {id:35,title:'Clean Dishwasher Filter',freq:'Annual',cat:'Appliances',icon:'🍽️',color:'rgba(0,122,255,.1)',guide:{
+    what:'Removing and cleaning the manual filter at the bottom of the dishwasher that traps food particles before they recirculate.',
+    why:'A clogged filter causes poor cleaning performance, standing water in the bottom of the tub, and bad odors. Most homeowners don\'t know this filter exists — it\'s not self-cleaning on newer models.',
+    where:'At the bottom of the dishwasher tub, under the lower spray arm. Most are a cylindrical filter that twists out, with a flat mesh filter underneath.',
+    how:['Pull out the lower rack.','Locate the cylindrical filter — usually marked with an arrow. Turn it counterclockwise to unlock and lift out.','Remove the flat mesh filter beneath it.','Rinse both under warm running water.','Use a soft brush and dish soap to scrub away any greasy buildup.','Reinstall both filters — ensure the cylindrical one is locked back in place.','Once a year, also run the dishwasher empty with a cup of white vinegar on the top rack to clean the interior.'],
+    tools:['Soft brush (old toothbrush works)','Dish soap'],
+    pro:'If dishes are still coming out dirty after filter cleaning, inspect the spray arm holes for clogs (poke them clear with a toothpick) or call an appliance technician to inspect the wash pump.'
+  }},
+  {id:36,title:'Inspect Siding for Damage',freq:'Annual',cat:'Exterior',icon:'🏠',color:'rgba(52,199,89,.1)',guide:{
+    what:'Walking the exterior of your home to look for damaged, loose, or deteriorating siding that could allow water entry.',
+    why:'Siding is your home\'s primary weather barrier. Damage — whether from impact, UV, moisture, or pests — creates entry points for water that can rot the sheathing and framing behind it.',
+    where:'All exterior walls, including areas behind bushes or in shaded areas that stay damp.',
+    how:['Walk all four sides of the house.','For vinyl siding: look for cracked, warped, or missing panels. Check that panels are locked together at the bottom.','For wood siding: probe any soft areas with a screwdriver. Look for peeling paint, cracks, and gaps at seams.','For fiber cement: look for cracks, chips, or areas where paint has failed (moisture intrusion).','Check trim boards at corners, around windows, and along the roofline for rot or separation.','Make note of anything within 6 inches of the soil — these areas are most vulnerable to moisture and pests.'],
+    tools:['Screwdriver (for probing)','Binoculars (for higher areas)','Camera to document findings'],
+    pro:'Soft wood behind siding or widespread paint failure on fiber cement can indicate significant moisture intrusion — have a contractor assess before it worsens.'
+  }},
+  {id:37,title:'Pest Inspection',freq:'Annual',cat:'Safety',icon:'🐛',color:'rgba(255,59,48,.1)',guide:{
+    what:'An annual whole-home inspection for signs of termite, rodent, or insect activity — ideally performed by a pest control professional.',
+    why:'Termites alone cause $5 billion in property damage annually in the US, and most homeowner\'s insurance doesn\'t cover it. Early detection makes treatment far less disruptive and expensive.',
+    where:'Crawl space, basement, attic, garage, around the foundation perimeter, and interior areas like kitchen and bathrooms.',
+    how:['Hire a licensed pest control company for an annual inspection — many offer this for free or low cost when bundled with a treatment plan.','If doing a self-inspection: look for mud tubes on the foundation (termites), droppings along baseboards or in cabinets (rodents or roaches), sawdust-like frass near wood (carpenter ants or beetles), and small pin-sized exit holes in wood.','Outside: look for rotting wood in direct contact with soil — prime termite territory.','Seal any gaps around pipes, cables, or at the foundation that are large enough for a mouse (about 1/4 inch).'],
+    tools:['Flashlight','Caulk or steel wool for sealing small gaps'],
+    pro:'Any evidence of active termites, or a significant rodent or insect infestation, should be handled by a licensed pest control professional — DIY treatment for termites is rarely effective.'
+  }},
+  {id:38,title:'Water Heater Inspection',freq:'Annual',cat:'Plumbing',icon:'🔥',color:'rgba(255,59,48,.1)',guide:{
+    what:'A comprehensive annual inspection of your water heater: the tank, connections, anode rod, pressure relief valve, and venting.',
+    why:'Water heaters fail without warning and often cause flooding. They also pose carbon monoxide and explosion risks if the pressure relief valve and venting aren\'t working. A tank older than 8–10 years warrants careful monitoring.',
+    where:'The water heater — typically in a utility closet, basement, or garage.',
+    how:['Look for rust-colored water at the drain valve or around connections — sign of internal corrosion.','Check the temperature/pressure (T&P) relief valve: carefully lift the lever briefly and release — it should snap back and water should flow then stop. Replace it if it doesn\'t seal, leaks, or is more than 5 years old.','Inspect the flue pipe (gas units): check for rust, gaps in sections, and proper slope upward toward the chimney.','Test the water temperature: it should be around 120 degrees F to prevent scalding and bacterial growth.','If you haven\'t flushed the tank in a year (see task 11), do so now.'],
+    tools:['Bucket for flushing','Thermometer for water temp test'],
+    pro:'Have a plumber inspect the anode rod every 3–5 years — it\'s the sacrificial rod that prevents tank corrosion, and replacing it can double the tank\'s life. Any signs of CO (headache, nausea near the unit) — leave immediately and call 911.'
+  }},
+  {id:39,title:'Check AC Before Summer',freq:'Spring',cat:'HVAC',icon:'❄️',color:'rgba(0,122,255,.1)',guide:{
+    what:'Preparing your air conditioning system for the cooling season — cleaning the outdoor unit, checking refrigerant performance, and replacing the filter.',
+    why:'Running a dirty or low-refrigerant AC unit in summer heat strains the compressor — the most expensive component. Catching issues in spring means same-day service, not a week-long wait during a heat wave.',
+    where:'The outdoor condenser unit (usually on the side or rear of the house) and the indoor air handler or furnace.',
+    how:['Replace or inspect the air filter.','Clear vegetation at least 2 feet around the outdoor unit.','Gently straighten any bent fins on the outdoor coil with a fin comb.','Turn the power on and run the system on a mild day — confirm cool air is coming from the vents within a few minutes.','Hose down the outdoor unit from inside the fins outward to clean debris (turn power off first).','Schedule a professional tune-up for refrigerant check, coil cleaning, and electrical inspection.'],
+    tools:['Garden hose','Fin comb (optional)','New air filter'],
+    pro:'Only a licensed HVAC technician can check and recharge refrigerant (EPA requirement). If the system runs but doesn\'t cool well, or freezes up, have a technician diagnose it before using it further.'
+  }},
+  {id:40,title:'Inspect Roof After Winter',freq:'Spring',cat:'Exterior',icon:'☂️',color:'rgba(52,199,89,.1)',guide:{
+    what:'A post-winter visual inspection of the roof, flashings, and gutters to find any damage caused by ice, wind, or freeze-thaw cycles.',
+    why:'Winter is hard on roofs: ice dams force water under shingles, wind lifts edges, and temperature swings crack flashing. Catching this in spring prevents summer rain from reaching your interior.',
+    where:'The roof surface and gutters — viewed from ground level with binoculars, or from a ladder at eave height.',
+    how:['Use binoculars from the ground to scan for missing shingles, raised or curling edges, and areas that look different from others.','Check flashing around the chimney, skylights, and vent pipes — look for separation or cracking.','Look inside gutters for shingle granules — heavy granule loss means shingles are aging.','If you had ice dams (ridges of ice at the eave), inspect those areas for lifted shingles and water staining in the attic below.','Check the attic for daylight coming through the roof deck or new water stains.'],
+    tools:['Binoculars','Flashlight (for attic check)','Ladder (for gutter-level inspection)'],
+    pro:'Any suspected ice dam damage, missing flashing, or soft/rotted roof decking should be assessed by a licensed roofer before the next rain season.'
+  }},
+  {id:41,title:'Clean & Inspect Gutters',freq:'Spring',cat:'Exterior',icon:'🌧️',color:'rgba(52,199,89,.1)',guide:{
+    what:'Removing debris from gutters and downspouts, then checking for sags, leaks, and proper drainage.',
+    why:'Clogged gutters overflow and direct water against your foundation and siding — the primary cause of basement water intrusion. They also become heavy enough to pull away from the fascia and damage the roofline.',
+    where:'All gutters around the perimeter of the roof.',
+    how:['Set up a ladder safely and work along the gutter, scooping debris by hand (gloves) into a bucket.','Flush each section with a garden hose to check for leaks at joints and to ensure water reaches the downspout.','Check that gutters slope toward downspouts — water should not pool anywhere.','Clear downspouts: stuff the hose in the top and turn it on full. If blocked, use a plumber\'s snake.','Check that downspouts discharge at least 4 feet from the foundation.','Look for gutters pulling away from the fascia — push in or replace gutter spikes with gutter screws.'],
+    tools:['Ladder','Gloves','Bucket','Garden hose','Gutter scoop or trowel','Plumber\'s snake (if needed)'],
+    pro:'If gutters leak at joints, apply gutter sealant from the inside after cleaning. If gutters are consistently pulling away from the house, the fascia board behind them may be rotting — have a contractor inspect.'
+  }},
+  {id:42,title:'Aerate & Fertilize Lawn',freq:'Spring',cat:'Yard',icon:'🌱',color:'rgba(52,199,89,.1)',guide:{
+    what:'Core aeration removes small plugs of soil from the lawn to relieve compaction, followed by fertilizer to feed the grass through the growing season.',
+    why:'Compacted soil blocks air, water, and nutrients from reaching grass roots. Aeration dramatically improves fertilizer effectiveness and reduces water runoff.',
+    where:'Your entire lawn.',
+    how:['Aerate when the ground is moist but not saturated — the day after rain is ideal.','Rent a core aerator from a home improvement store — push or ride it over the lawn twice, in perpendicular directions.','Leave the soil plugs on the lawn — they break down in 1–2 weeks and return nutrients.','Apply a slow-release lawn fertilizer immediately after aerating (it falls into the holes).','Water the lawn after fertilizing.','Overseed thin areas by casting grass seed into the aeration holes.'],
+    tools:['Core aerator (rental)','Slow-release lawn fertilizer','Grass seed (for thin areas)','Spreader'],
+    pro:'If your lawn has heavy thatch (over half inch of dead grass material at the soil surface), consider power raking (dethatching) before aerating — this is also a rental task, or a lawn service can do the whole program.'
+  }},
+  {id:43,title:'Trim Trees Away from House',freq:'Spring',cat:'Yard',icon:'🌳',color:'rgba(52,199,89,.1)',guide:{
+    what:'Pruning branches that overhang the roof or touch the house to prevent storm damage and pest intrusion.',
+    why:'Overhanging branches drop debris in gutters, scrape shingles during wind, and form a highway for squirrels and other pests into the attic. During storms, heavy branches can cause serious roof damage.',
+    where:'Any tree with branches within 10 feet of the roof, touching the siding, or hanging over the house.',
+    how:['Use a pole pruner for branches you can reach from the ground (never from a ladder with a saw).','Cut branches back so the nearest limb is at least 6–10 feet from the roofline.','Make pruning cuts just outside the branch collar (the raised ring at the base of the branch) — this helps the tree heal.','Remove any dead branches, which are more likely to fall in storms.','Clear cut material promptly to avoid pest habitat.'],
+    tools:['Pole pruner or pole saw','Hand pruning saw','Safety glasses','Gloves'],
+    pro:'For large branches (over 4 inches in diameter), branches over the house, or any work requiring a climbing harness, hire a certified arborist. Tree work is one of the most dangerous DIY activities — falls and dropped limbs cause serious injuries.'
+  }},
+  {id:44,title:'Wash Windows Inside & Out',freq:'Spring',cat:'Interior',icon:'🪟',color:'rgba(175,82,222,.1)',guide:{
+    what:'Cleaning window glass on both the interior and exterior surfaces, as well as the frames and sills.',
+    why:'Winter leaves windows covered in road salt spray, oxidation deposits, and grime that obscures natural light and makes the home feel darker. Clean windows also allow you to see and assess the glass condition.',
+    where:'All exterior-facing windows and glass doors.',
+    how:['Mix a solution of dish soap and warm water, or use a commercial window cleaner.','Start outside: rinse with a hose, then wash with a soft sponge, moving in horizontal strokes.','Use a squeegee from top to bottom for streak-free results — overlap each pass.','Wipe the squeegee blade with a chamois or newspaper after each stroke.','For the interior, spray the glass and wipe with a microfiber cloth in a circular motion, finishing with straight strokes.','Clean the frames and sills with an all-purpose cleaner.'],
+    tools:['Squeegee','Sponge or soft cloth','Microfiber cloths','Window cleaner or dish soap','Bucket','Hose (exterior)'],
+    pro:'Persistent cloudiness between double-pane glass means the seal has failed — the gas has escaped and condensation is forming inside the unit. The pane needs replacing, not cleaning.'
+  }},
+  {id:45,title:'Deep Clean Entire Home',freq:'Spring',cat:'Interior',icon:'✨',color:'rgba(175,82,222,.1)',guide:{
+    what:'A thorough, top-to-bottom cleaning of the home that goes beyond regular maintenance — hitting areas that are typically neglected.',
+    why:'Accumulated dust, grease, and grime can affect air quality, harbor pests, and hide damage. A once-a-year deep clean is also the best time to check behind appliances and inside cabinetry.',
+    where:'The entire home — work from top to bottom, far rooms to near the exit.',
+    how:['Start at the ceiling: wipe fan blades, clean light fixtures, and dust crown molding.','Wipe cabinet fronts, clean inside cabinets and pantry, and empty and clean the refrigerator interior.','Wash baseboards and door frames.','Deep clean bathrooms: behind the toilet, inside drains, and the exhaust fan grilles.','Clean behind and under appliances: refrigerator, stove, dryer, washing machine.','Shampoo rugs or steam clean hard floors.','Clean interior windows and window treatments.'],
+    tools:['Microfiber cloths','All-purpose cleaner','Bucket and mop','Vacuum','Baking soda, vinegar as needed'],
+    pro:'While deep cleaning behind appliances, look for signs of water damage, mold, or pest activity — these are worth addressing before replacing items in front of them.'
+  }},
+  {id:46,title:'Check Sump Pump Before Rain',freq:'Spring',cat:'Plumbing',icon:'💦',color:'rgba(90,200,250,.1)',guide:{
+    what:'Testing the sump pump at the start of spring — before the snowmelt and spring rain season — to confirm it\'s functional.',
+    why:'Spring is peak season for basement flooding. A pump that sat idle all winter may have seized, tripped, or lost prime. Testing now means you catch a failure before the rain does.',
+    where:'The sump pit in your basement or crawl space.',
+    how:['Remove the pit cover.','Pour 5 gallons of water into the pit using a bucket.','The float should rise and trigger the pump.','Confirm water is being discharged through the exit pipe.','Watch the water level drop and the pump shut off automatically.','If you have a battery backup pump, test it by unplugging the primary and repeating the test.'],
+    tools:['Bucket (5 gallons)'],
+    pro:'If the pump runs but doesn\'t move water, the impeller may be clogged or the check valve stuck. If it doesn\'t run at all, check the outlet and circuit breaker. Any uncertainty before a major rain event — call a plumber.'
+  }},
+  {id:47,title:'Check Heating Before Winter',freq:'Fall',cat:'HVAC',icon:'🌡️',color:'rgba(0,122,255,.1)',guide:{
+    what:'Testing your heating system before the first cold snap to confirm it starts, heats, and distributes air correctly.',
+    why:'The first real cold day reveals every HVAC problem. Catching issues in October means same-week repair availability; waiting until December means competing with thousands of other homeowners for service.',
+    where:'Your furnace or heat pump (in the utility room, attic, or basement) and all supply vents throughout the house.',
+    how:['Replace the air filter first.','Set the thermostat to HEAT and raise it above current room temperature.','Within a few minutes, warm air should come from the supply vents — feel several in different rooms.','Note any unusual smells (burning dust on first run is normal; burning plastic or sulfur is not).','Confirm the system reaches the set temperature and cycles off.','Check that all vents are open and unobstructed.','Schedule a professional fall tune-up if you haven\'t done so in 12 months.'],
+    tools:['New air filter'],
+    pro:'A burning smell that persists beyond the first 10 minutes, no heat despite the system running, or a system that short-cycles (turns on and off rapidly) all warrant a professional HVAC technician.'
+  }},
+  {id:48,title:'Clean & Store Outdoor Furniture',freq:'Fall',cat:'Yard',icon:'🪑',color:'rgba(52,199,89,.1)',guide:{
+    what:'Cleaning outdoor furniture and either storing it indoors or covering it with weatherproof covers before winter.',
+    why:'UV, moisture, and freeze-thaw cycles degrade outdoor furniture rapidly if left exposed. Proper storage can extend the life of quality pieces by many years.',
+    where:'All outdoor seating, tables, cushions, and accessories.',
+    how:['Clean all surfaces with a solution of dish soap and warm water — use a scrub brush for wicker or textured surfaces.','For metal furniture: dry thoroughly to prevent rust. Apply a coat of car wax to painted metal to protect it.','For wood furniture: clean and apply teak oil or outdoor wood sealer.','Bring cushions inside — moisture in stored cushions leads to mold.','Fold and stack furniture in the garage or a shed, or cover tightly with waterproof covers.'],
+    tools:['Dish soap','Scrub brush','Teak oil or outdoor wood sealer (for wood furniture)','Weatherproof furniture covers'],
+    pro:'If metal furniture has rust spots, sand them down to bare metal, apply a rust-inhibiting primer, and repaint before storing — rust spreads over winter.'
+  }},
+  {id:49,title:'Winterize Sprinklers',freq:'Fall',cat:'Yard',icon:'❄️',color:'rgba(52,199,89,.1)',guide:{
+    what:'Removing all water from the irrigation system before freezing temperatures to prevent cracked pipes and heads.',
+    why:'A single freeze cycle can crack dozens of fittings and heads. Winterization is a $75–$100 professional service that prevents a $500–$2,000 spring repair.',
+    where:'The entire in-ground irrigation system.',
+    how:['Shut off the irrigation water supply at the backflow preventer.','Hire an irrigation company to blow out the system with compressed air — they sequence each zone properly.','If doing it yourself: connect a large compressor (50+ CFM) to the blowout port, run each zone briefly from farthest to nearest, never stand near the heads.','After blowout: leave backflow preventer valves at 45 degrees to allow any residual water to expand without cracking.','Insulate the above-ground backflow preventer with foam wrap.'],
+    tools:['Foam insulation wrap for backflow preventer'],
+    pro:'Hire an irrigation technician for this — improper blowout pressure can destroy heads and crack fittings. It\'s inexpensive and worth it.'
+  }},
+  {id:50,title:'Stock Emergency Supplies',freq:'Fall',cat:'Safety',icon:'🧰',color:'rgba(255,59,48,.1)',guide:{
+    what:'Reviewing and restocking your home emergency kit before winter — a collection of essentials for power outages, severe storms, or other emergencies.',
+    why:'Winter storms can knock out power for days. Having supplies ready means you can shelter in place safely instead of scrambling during an emergency.',
+    where:'A dedicated kit in an accessible location — a plastic tote in the basement, utility closet, or hallway.',
+    how:['Water: 1 gallon per person per day, 3-day minimum. Check dates and rotate.','Food: 3-day supply of non-perishable items (canned goods, granola bars, etc.).','Flashlights and extra batteries, or a hand-crank flashlight.','Battery-powered or hand-crank radio.','First aid kit — check contents and replace expired items.','Blankets and warm layers for each person.','Phone charging cable and power bank.','Basic medications: pain reliever, antacid, any prescription medications.','Copies of important documents in a waterproof bag.','Cash (ATMs don\'t work in outages).'],
+    tools:['Storage tote or duffel bag'],
+    pro:'If you have a generator, have it serviced and test-run before winter. Never run a generator indoors or in the garage — carbon monoxide risk is lethal.'
+  }},
+  {id:51,title:'Seal Gaps & Cracks (Exterior)',freq:'Fall',cat:'Exterior',icon:'🔧',color:'rgba(52,199,89,.1)',guide:{
+    what:'Sealing gaps and penetrations in the exterior of the home where pipes, cables, and wires enter, and where siding sections meet or have cracked.',
+    why:'Small gaps are both air leaks (energy loss) and pest entry points. A mouse can fit through a gap the size of a dime. Sealing before winter keeps both cold air and unwanted visitors out.',
+    where:'Where pipes, cables, and wires enter the home through the foundation or exterior walls; gaps in siding seams; gaps around window and door frames; where the sill plate meets the foundation.',
+    how:['Walk the perimeter of the house and mark every gap or penetration.','For small gaps around pipes and cables: fill with expanding foam or stuff with steel wool (pests can\'t chew through steel wool), then seal over with exterior caulk.','For gaps in siding: apply exterior-grade caulk.','For foundation gaps: use hydraulic cement or masonry caulk for concrete; expanding foam for wood-framed areas.','For larger gaps: use hardware cloth (metal mesh) cut to fit, secured with staples, then caulked over.'],
+    tools:['Expanding foam','Steel wool','Exterior caulk + gun','Hardware cloth','Staple gun','Hydraulic cement (for masonry)'],
+    pro:'If you find evidence of an active rodent infestation before sealing — droppings, chewed material, nesting — address the infestation first with traps or a pest control service, then seal the entry points. Sealing in active pests makes the problem worse.'
+  }},
+  {id:52,title:'Drain & Store Garden Hoses',freq:'Fall',cat:'Yard',icon:'🌿',color:'rgba(52,199,89,.1)',guide:{
+    what:'Disconnecting, draining, and storing all garden hoses before freezing temperatures arrive.',
+    why:'Water left in a garden hose freezes and expands — cracking the hose itself and, more importantly, preventing the frost-proof hose bib from draining, which can crack the pipe inside the wall.',
+    where:'All outdoor hose bibs and hose storage locations.',
+    how:['Disconnect all hoses from the outdoor spigots — this is critical for frost-proof bibs to work.','Hold one end up and walk the hose to drain all water.','Coil the hose loosely and store inside a garage, shed, or insulated area.','Check the hose for cracks or leaks while coiling — replace any that are cracked.','If you have a hose reel, drain it as well.','Leave the hose bib open briefly to confirm it drains (frost-proof bibs drain when the hose is disconnected and the bib is closed).'],
+    tools:['Hose storage hook or reel'],
+    pro:'If a frost-proof bib still drips after disconnecting the hose, the internal washer may need replacement — a simple repair for a plumber.'
+  }},
+  {id:53,title:'Inspect Chimney Before Use',freq:'Fall',cat:'Structural',icon:'🏚️',color:'rgba(134,97,67,.1)',guide:{
+    what:'A basic inspection of the fireplace and visible chimney before lighting the first fire of the season.',
+    why:'Birds, squirrels, and debris can block the flue over spring and summer. Lighting a fire with a blocked flue sends smoke and carbon monoxide into your living space.',
+    where:'The firebox (interior of the fireplace), the damper, and the visible flue above the damper.',
+    how:['Open the damper fully.','Shine a flashlight up the flue from inside the firebox — look for blockages, debris, or animal nests.','Check the damper itself — it should open and close smoothly and seal well when closed.','Look at the firebox walls for loose mortar, spalling bricks, or cracks.','Smell for musty or animal odors (sign of a dead animal in the flue).','If everything looks clear and the chimney was cleaned within the past year and lightly used, a fire is reasonable.'],
+    tools:['Flashlight'],
+    pro:'For a chimney that hasn\'t been professionally cleaned in over a year, or one used heavily the prior season, schedule a CSIA-certified chimney sweep before use — creosote is a fire hazard that a flashlight can\'t fully assess.'
+  }},
+  {id:54,title:'Clean Gutters After Leaves Fall',freq:'Fall',cat:'Exterior',icon:'🍂',color:'rgba(52,199,89,.1)',guide:{
+    what:'Cleaning gutters once all leaves have fallen — the most critical gutter cleaning of the year, done in late fall before freeze.',
+    why:'Gutters full of wet leaves are extremely heavy and pull away from the fascia. When they freeze, ice dams form. Freezing leaf matter then blocks downspouts completely. This cleaning prevents basement flooding and ice damage.',
+    where:'All gutters, with special attention to downspout openings.',
+    how:['Wait until all nearby deciduous trees have dropped their leaves.','Scoop debris by hand (gloves) or with a gutter scoop into a bucket — work in sections from the high end toward the downspout.','Flush each section with a garden hose to check for leaks and confirm downspouts flow freely.','Clear downspouts: flush from the top. Use a plumber\'s snake if blocked.','Ensure all downspout extensions are in place and direct water well away from the foundation.','Do a final check after the first rain to confirm everything is draining.'],
+    tools:['Ladder','Gloves','Gutter scoop or trowel','Bucket','Garden hose'],
+    pro:'Gutters that overflow at joints, sag, or are pulling away from the house may need new hangers or resealing. A gutter company can also install gutter guards if leaf volume is a persistent problem.'
+  }},
+  {id:55,title:'Unclog Drains',freq:'As Needed',cat:'Plumbing',icon:'🚰',color:'rgba(90,200,250,.1)',guide:{
+    what:'Clearing a slow or clogged drain in a sink, tub, or shower.',
+    why:'Slow drains are usually hair, soap scum, or grease buildup — all easy to clear before they become a complete blockage. Addressing it early prevents the mess and potential pipe stress of a full clog.',
+    where:'Kitchen sink, bathroom sinks, shower, and tub drains.',
+    how:['For bathroom drains: remove the stopper or drain cover. Use needle-nose pliers or a drain snake/hair catcher tool to pull out the clog — it\'s usually a hair mass.','For kitchen drains: avoid chemical drain cleaners (they damage pipes over time). Try boiling water first. Then use a plunger.','Use a cup plunger (not a flange plunger): cover the drain fully, add enough water to cover the plunger head, and plunge vigorously.','For stubborn clogs: use a hand-crank drain snake (auger) — feed it into the drain until it contacts the clog, rotate to grab it, and pull it out.','For the P-trap: place a bucket under the curved pipe below the sink, unscrew the slip nuts, and clean the trap manually.'],
+    tools:['Cup plunger','Drain snake or hand auger','Needle-nose pliers','Bucket','Gloves'],
+    pro:'If multiple drains are slow simultaneously, the problem is in the main line — call a plumber. Chemical drain cleaners are a last resort and should be rinsed thoroughly; they damage pipes and are hazardous.'
+  }},
+  {id:56,title:'Repair Drywall',freq:'As Needed',cat:'Interior',icon:'🪣',color:'rgba(175,82,222,.1)',guide:{
+    what:'Patching holes, dents, or cracks in drywall — from doorknob impacts, nail holes, or minor damage.',
+    why:'Small drywall damage is cosmetically unappealing and can expand over time. Holes can also admit insects or compromise fire ratings between rooms.',
+    where:'Interior walls and ceilings anywhere damage has occurred.',
+    how:['For nail or screw holes: fill with spackle using a putty knife, smooth flush, let dry, sand lightly, and paint.','For small holes (under 4 inches): use a self-adhesive mesh patch. Apply over the hole, cover with joint compound in two thin coats (feathering outward), sand smooth when dry, and paint.','For large holes: cut a square around the damage. Cut a backer board (wood strip) to fit inside and secure it with screws. Cut a drywall patch to fit the square. Secure it to the backer. Tape seams with drywall tape, apply joint compound in layers, sand, and paint.'],
+    tools:['Spackle or joint compound','Putty knife','Drywall mesh patch (for small holes)','Sandpaper (120 and 220 grit)','Matching paint'],
+    pro:'Large or recurring cracks (especially diagonal cracks from door corners) may indicate structural movement or settling — have a contractor inspect before patching cosmetically.'
+  }},
+  {id:57,title:'Re-caulk Tub/Shower',freq:'As Needed',cat:'Interior',icon:'🛁',color:'rgba(175,82,222,.1)',guide:{
+    what:'Removing old, failing caulk from around the tub or shower and applying a fresh bead.',
+    why:'The caulk joint at the base of the shower is one of the highest-movement joints in the house — it expands and contracts with every use. When it cracks, water enters the wall. Recaulking before failure prevents expensive tile and framing repairs.',
+    where:'Where the tub or shower pan meets the tile wall, and at the floor-to-wall joint.',
+    how:['Remove ALL old caulk: use a caulk remover tool, utility knife, and needle-nose pliers. Don\'t apply new caulk over old — it won\'t adhere.','Clean the surface with rubbing alcohol and dry completely. Don\'t use for 24 hours before caulking.','Apply painter\'s tape to both surfaces (tile and tub) for clean lines.','Apply 100% silicone caulk in a steady bead — don\'t stop mid-joint.','Immediately smooth with a wet finger, pressing firmly to seat the caulk.','Remove the tape before the caulk skins over.','Do not use the shower for 24–48 hours while curing.'],
+    tools:['Caulk remover tool or utility knife','100% silicone caulk (mold-resistant, for wet areas)','Caulk gun','Painter\'s tape','Rubbing alcohol','Clean rag'],
+    pro:'If the tile behind the caulk is loose, sounds hollow, or there is mold growing through the grout, water has already entered the wall — a tile contractor needs to assess the damage before you recaulk.'
+  }},
+  {id:58,title:'Touch Up Paint',freq:'As Needed',cat:'Interior',icon:'🖌️',color:'rgba(175,82,222,.1)',guide:{
+    what:'Addressing scuffs, chips, and small areas of paint damage on walls and trim.',
+    why:'Paint protects surfaces from moisture and wear. Touching up chips and scuffs keeps the home looking maintained and prevents wall damage from expanding.',
+    where:'Walls, trim, doors, and baseboards wherever paint is chipped, scuffed, or marked.',
+    how:['Clean the area first — touch-up paint won\'t stick to grease or dust.','For small chips: sand lightly to remove any raised edges, apply a thin coat of matching paint with a small brush, and feather the edges.','For larger areas: apply primer first if the substrate is exposed.','Use a mini foam roller for wall surfaces — it blends better than a brush.','Apply thin coats — two thin ones cover better than one thick one and minimize sheen differences.','Match paint: check if leftover paint is stored (label the can with room name and date when first opened).'],
+    tools:['Matching paint','Small brush and mini foam roller','Fine sandpaper (220 grit)','Painter\'s tape','Primer (if bare surface is exposed)'],
+    pro:'If a scuff won\'t come clean despite repainting, or if large areas of paint are peeling, the underlying cause (moisture, adhesion failure) should be investigated before repainting.'
+  }},
+  {id:59,title:'Pest Treatment',freq:'As Needed',cat:'Safety',icon:'🐜',color:'rgba(255,59,48,.1)',guide:{
+    what:'Applying targeted treatment for a specific pest issue — ants, roaches, spiders, or rodents — that has been identified in the home.',
+    why:'A single ant trail or mouse dropping often signals a larger population nearby. Treating quickly before an infestation grows is far more effective than responding once pests are well established.',
+    where:'Depends on the pest: kitchen and bathroom for ants/roaches; along foundation and attic/basement entry points for rodents; basement and crawl space for moisture-loving insects.',
+    how:['Identify the pest accurately — treatment differs by species.','For ants: use gel bait (not spray) near trails — ants carry bait back to the colony. Spray kills the trail scouts but not the colony.','For roaches: gel bait in cracks and crevices. Clean thoroughly — remove food and water sources.','For rodents: snap traps are most effective and allow you to confirm a catch. Place along walls where droppings are found.','Seal all entry points after treating to prevent re-entry.','For outdoor treatment: apply a perimeter insecticide barrier around the foundation.'],
+    tools:['Gel bait (for ants or roaches)','Snap traps (for rodents)','Perimeter insecticide spray','Gloves'],
+    pro:'Termites, bed bugs, and significant rodent infestations should always be handled by a licensed pest control professional — DIY treatments are rarely effective and can delay necessary professional treatment.'
+  }},
 ];
 
 const FREQ_ORDER = ['Monthly','Quarterly','Bi-Annual','Annual','Spring','Fall','As Needed'];
@@ -1658,6 +2096,30 @@ function toggleTask(id,e){
   saveS();renderTasks();refreshHome();
 }
 
+function switchTaskTab(tab){
+  const isDetails = tab==='details';
+  document.getElementById('tsTabDetails').className='ts-tab'+(isDetails?' active':'');
+  document.getElementById('tsTabGuide').className='ts-tab'+(isDetails?'':' active');
+  document.getElementById('tsPanelDetails').style.display=isDetails?'':'none';
+  document.getElementById('tsPanelGuide').style.display=isDetails?'none':'';
+}
+
+function renderGuide(t){
+  const g=t.guide;
+  if(!g){
+    return '<div style="padding:32px 0;text-align:center;color:var(--label2)">No guide available for this task.</div>';
+  }
+  const sections=[
+    {title:'What it is',body:`<p class="guide-section-body">${g.what}</p>`},
+    {title:'Why it matters',body:`<p class="guide-section-body">${g.why}</p>`},
+    {title:'Where to look',body:`<p class="guide-section-body">${g.where}</p>`},
+    {title:'How to do it',body:`<ol class="guide-steps">${g.how.map((s,i)=>`<li><span class="guide-step-num">${i+1}</span><span>${s}</span></li>`).join('')}</ol>`},
+    {title:'Tools & materials',body:`<div class="guide-tools">${g.tools.map(tool=>`<span class="guide-tool-chip">${tool}</span>`).join('')}</div>`},
+    {title:'When to call a pro',body:`<div class="guide-pro-box">${g.pro}</div>`},
+  ];
+  return sections.map(s=>`<div class="guide-section"><div class="guide-section-title">${s.title}</div>${s.body}</div>`).join('');
+}
+
 function openTask(id){
   const t=TASKS.find(x=>x.id===id);if(!t)return;
   S.curTaskId=id;
@@ -1670,6 +2132,8 @@ function openTask(id){
   document.getElementById('tsTag').textContent=t.freq;
   document.getElementById('tsNotes').value=S.taskNotes[id]||'';
   document.getElementById('tsToggle').className='toggle'+(S.taskDone[id]?' on':'');
+  document.getElementById('tsGuideContent').innerHTML=renderGuide(t);
+  switchTaskTab('details');
   openSheet('taskSheet');
 }
 
