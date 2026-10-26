@@ -263,11 +263,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .coming-soon p{font-size:14px;color:var(--label3);line-height:1.55;letter-spacing:-.1px}
 .coming-soon-pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
 
-/* ── WEEK DOTS ── */
-.week-row{display:flex;gap:6px;padding:12px 16px;justify-content:space-between}
-.week-dot{flex:1;aspect-ratio:1;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--label3);max-width:40px;transition:background .2s,color .2s}
-.week-dot.done{background:var(--blue);color:#fff}
-.week-dot.today{background:var(--bg4);color:var(--label);font-weight:800;ring:.5px solid var(--label4)}
+/* ── WEEK STRIP ── */
+.week-row{display:flex;gap:4px;justify-content:space-between;width:100%}
+.week-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:2px 0}
+.week-col:active .week-dot{transform:scale(.88)}
+.week-day-label{font-size:11px;font-weight:600;color:var(--label3);letter-spacing:.2px}
+.week-dot{width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--label3);transition:background .2s,color .2s,transform .15s;position:relative}
+.week-dot.today{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(0,122,255,.4)}
+.week-dot.today-ring{box-shadow:0 0 0 2.5px var(--blue),0 2px 8px rgba(0,122,255,.3)}
+.week-dot.has-activity{background:rgba(52,199,89,.15);color:var(--green)}
+.week-dot-dots{display:flex;gap:3px;justify-content:center;height:6px;align-items:center}
+.week-dot-pip{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+/* streak ring around today */
+.week-dot-ring{position:absolute;inset:-3px;border-radius:50%;pointer-events:none}
+.week-dot.past{opacity:.45}
+/* ── DAY AGENDA SHEET ── */
+.da-date-header{padding:16px 16px 8px;display:flex;align-items:center;justify-content:space-between}
+.da-date-big{font-size:28px;font-weight:700;letter-spacing:-.6px;color:var(--label)}
+.da-date-sub{font-size:14px;color:var(--label3);margin-top:2px}
+.da-section{padding:0 16px;margin-bottom:16px}
+.da-section-title{font-size:13px;font-weight:600;color:var(--label3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.da-empty{text-align:center;padding:24px 0;color:var(--label4);font-size:14px}
 
 /* ── SEASONAL BANNER ── */
 .season-banner{background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;margin:12px 16px 0;padding:14px 16px;color:#fff;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(217,119,6,.3);cursor:pointer;transition:transform .15s,opacity .15s;-webkit-tap-highlight-color:transparent}
@@ -346,10 +362,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
     <div class="stat-card"><div class="stat-num" id="dashProjects">0</div><div class="stat-label">Projects complete</div></div>
   </div>
 
-  <!-- Week streak -->
+  <!-- Week strip -->
   <div class="section">
-    <div class="section-header">This Week</div>
-    <div class="card"><div class="week-row" id="weekRow"></div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 6px">
+      <div class="section-header" style="padding:0;margin:0" id="weekStripLabel">This Week</div>
+      <div style="display:flex;gap:4px">
+        <button onclick="shiftWeek(-1)" style="background:var(--bg3);border:none;border-radius:8px;width:28px;height:28px;font-size:16px;cursor:pointer;color:var(--label3);display:flex;align-items:center;justify-content:center">‹</button>
+        <button onclick="shiftWeek(1)" style="background:var(--bg3);border:none;border-radius:8px;width:28px;height:28px;font-size:16px;cursor:pointer;color:var(--label3);display:flex;align-items:center;justify-content:center">›</button>
+      </div>
+    </div>
+    <div class="card" style="padding:10px 8px 8px"><div class="week-row" id="weekRow"></div></div>
   </div>
 
   <!-- Due soon -->
@@ -513,6 +535,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
       <div class="row" onclick="exportData()"><div class="row-icon" style="background:rgba(52,199,89,.1)">💾</div><div class="row-content"><div class="row-title">Export Backup</div><div class="row-subtitle">Download all your data as a JSON file</div></div></div>
       <div class="row" onclick="importData()"><div class="row-icon" style="background:rgba(0,122,255,.1)">📥</div><div class="row-content"><div class="row-title">Restore from Backup</div><div class="row-subtitle">Import a previously exported JSON file</div></div></div>
       <div class="row" onclick="resetAllData()"><div class="row-icon" style="background:rgba(255,59,48,.1)">🗑️</div><div class="row-content"><div class="row-title" style="color:var(--red)">Reset All Data</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ DAY AGENDA SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="dayAgendaSheet" onclick="sheetClose('dayAgendaSheet',event)">
+  <div class="sheet" style="max-height:88vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('dayAgendaSheet')">Close</button>
+      <div class="sheet-title" id="daSheetTitle">Monday</div>
+      <button class="sheet-btn primary" onclick="addApptFromDay()">+ Appt</button>
+    </div>
+    <div style="overflow-y:auto;padding-bottom:40px">
+      <div class="da-date-header">
+        <div>
+          <div class="da-date-big" id="daDateBig"></div>
+          <div class="da-date-sub" id="daDateSub"></div>
+        </div>
+        <div id="daStreakBadge" style="display:none;background:rgba(52,199,89,.12);color:var(--green);border-radius:12px;padding:6px 12px;font-size:13px;font-weight:600"></div>
+      </div>
+      <div id="daAppts"></div>
+      <div id="daTasks"></div>
     </div>
   </div>
 </div>
@@ -1245,18 +1290,7 @@ function refreshHome(){
   document.getElementById('seasonTitle').textContent = s.title;
   document.getElementById('seasonTip').textContent = s.tip;
 
-  // week streak
-  const wr = document.getElementById('weekRow');
-  wr.innerHTML = '';
-  const days=['M','T','W','T','F','S','S'];
-  const today=new Date().getDay();
-  days.forEach((d,i)=>{
-    const div=document.createElement('div');
-    const past = i < ((today===0?7:today)-1);
-    div.className='week-dot'+(past?' done':'')+(i===(today===0?6:today-1)?' today':'');
-    div.textContent=d;
-    wr.appendChild(div);
-  });
+  renderWeekStrip();
 
   // upcoming appointment widget
   const uw = document.getElementById('upcomingWidget');
@@ -1409,6 +1443,194 @@ function toggleSeasonalTask(id,e){
   const t=(S.seasonalTasks||[]).find(x=>x.id===id);
   if(t){ t.done=!t.done; saveS(); renderTasks(); refreshHome(); }
 }
+
+// ═══════════════════════ WEEK STRIP ═══════════════════════
+let _weekOffset = 0; // 0 = current week, -1 = last week, +1 = next week
+
+function getWeekDates(offset){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  // Start of current week (Monday=0)
+  const dow = today.getDay(); // 0=Sun,1=Mon...
+  const mondayDiff = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + mondayDiff + (offset * 7));
+  const dates = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(monday);
+    d.setDate(monday.getDate()+i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+function isoDate(d){ return d.toISOString().slice(0,10); }
+
+function renderWeekStrip(){
+  const wr = document.getElementById('weekRow');
+  if(!wr) return;
+  wr.innerHTML='';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dates = getWeekDates(_weekOffset);
+  const DAY_LABELS=['M','T','W','T','F','S','S'];
+
+  // Streak: count consecutive days with completed tasks this week (up to today)
+  let streakCount = 0;
+  for(let i=0;i<7;i++){
+    const d = dates[i];
+    if(d > today) break;
+    const ds = isoDate(d);
+    const hasTaskDone = Object.keys(S.taskDone||{}).some(k=>{
+      const t=(S.tasks||[]).find(x=>String(x.id)===String(k));
+      return t && S.taskDone[k] && t.nextDue && t.nextDue.slice(0,10)===ds;
+    });
+    const hasAppt = (S.appointments||[]).some(a=>a.date===ds && a.status!=='Cancelled');
+    if(hasTaskDone||hasAppt) streakCount++; else if(d < today) streakCount=0;
+  }
+
+  // Update label
+  const lbl = document.getElementById('weekStripLabel');
+  if(lbl){
+    if(_weekOffset===0) lbl.textContent='This Week';
+    else if(_weekOffset===-1) lbl.textContent='Last Week';
+    else if(_weekOffset===1) lbl.textContent='Next Week';
+    else{
+      const start=dates[0];
+      lbl.textContent=start.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    }
+  }
+
+  dates.forEach((d,i)=>{
+    const ds = isoDate(d);
+    const isToday = d.getTime()===today.getTime();
+    const isPast = d < today;
+
+    // Count appts + tasks for pips
+    const appts=(S.appointments||[]).filter(a=>a.date===ds && a.status!=='Cancelled');
+    const dueTasks=(S.tasks||[]).filter(t=>t.nextDue && t.nextDue.slice(0,10)===ds);
+    const hasAny = appts.length>0||dueTasks.length>0;
+
+    // Build pips (max 3)
+    let pipHtml='';
+    const allPips=[...appts.map(()=>({c:'var(--blue)',...{}})),...dueTasks.map(()=>({c:'var(--orange)'}))];
+    const shown=allPips.slice(0,3);
+    if(shown.length){
+      pipHtml=shown.map(p=>`<div class="week-dot-pip" style="background:${p.c}"></div>`).join('');
+    }
+
+    // Streak ring SVG (shown on today when streak>0)
+    let ringHtml='';
+    if(isToday && streakCount>0){
+      const pct = Math.min(streakCount/7,1);
+      const r=18, circ=2*Math.PI*r;
+      const dash=circ*pct, gap=circ*(1-pct);
+      ringHtml=`<svg class="week-dot-ring" viewBox="0 0 40 40" style="position:absolute;inset:-2px;width:40px;height:40px"><circle cx="20" cy="20" r="${r}" fill="none" stroke="rgba(52,199,89,.25)" stroke-width="2.5"/><circle cx="20" cy="20" r="${r}" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg>`;
+    }
+
+    const col=document.createElement('div');
+    col.className='week-col';
+    col.onclick=()=>openDayAgenda(ds);
+    col.innerHTML=`
+      <div class="week-day-label">${DAY_LABELS[i]}</div>
+      <div class="week-dot${isToday?' today':''}${!isToday&&hasAny?' has-activity':''}${!isToday&&isPast&&!hasAny?' past':''}">
+        ${ringHtml}
+        ${d.getDate()}
+      </div>
+      <div class="week-dot-dots">${pipHtml}</div>
+    `;
+    wr.appendChild(col);
+  });
+}
+
+function shiftWeek(dir){
+  _weekOffset+=dir;
+  renderWeekStrip();
+}
+
+function openDayAgenda(ds){
+  const d = new Date(ds+'T12:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Header
+  document.getElementById('daSheetTitle').textContent = d.toLocaleDateString('en-US',{weekday:'long'});
+  document.getElementById('daDateBig').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  document.getElementById('daDateSub').textContent = d.getFullYear();
+
+  // Streak badge
+  const sb=document.getElementById('daStreakBadge');
+  const dates=getWeekDates(_weekOffset);
+  let streak=0;
+  for(let i=0;i<7;i++){
+    const di=dates[i];
+    if(di>today) break;
+    const dsi=isoDate(di);
+    const hasAct=(S.appointments||[]).some(a=>a.date===dsi&&a.status!=='Cancelled')||
+                 Object.keys(S.taskDone||{}).some(k=>S.taskDone[k]&&(S.tasks||[]).find(t=>String(t.id)===String(k)&&t.nextDue&&t.nextDue.slice(0,10)===dsi));
+    if(hasAct) streak++; else if(di<today) streak=0;
+  }
+  if(streak>1){ sb.textContent=`🔥 ${streak}-day streak`; sb.style.display='block'; }
+  else sb.style.display='none';
+
+  // Store selected date for add button
+  window._daDate=ds;
+
+  // Appointments
+  const appts=(S.appointments||[]).filter(a=>a.date===ds&&a.status!=='Cancelled')
+    .sort((a,b)=>(a.time||'00:00').localeCompare(b.time||'00:00'));
+  const daAppts=document.getElementById('daAppts');
+  if(appts.length){
+    daAppts.innerHTML=`<div class="da-section"><div class="da-section-title">Appointments</div>`+
+      appts.map(a=>`<div class="row" onclick="openApptDetail('${a.id}');closeSheet('dayAgendaSheet')" style="cursor:pointer">
+        <div class="row-icon" style="background:var(--blue);opacity:.9">📅</div>
+        <div class="row-content">
+          <div class="row-title">${a.title}</div>
+          <div class="row-subtitle">${a.time?fmtTime(a.time)+' · ':''}${a.who||a.cat||''}</div>
+        </div>
+        <div class="chevron">›</div>
+      </div>`).join('')+`</div>`;
+  } else {
+    daAppts.innerHTML='';
+  }
+
+  // Due tasks
+  const dueTasks=(S.tasks||[]).filter(t=>t.nextDue&&t.nextDue.slice(0,10)===ds);
+  const daTasks=document.getElementById('daTasks');
+  if(dueTasks.length){
+    daTasks.innerHTML=`<div class="da-section"><div class="da-section-title">Due Tasks</div>`+
+      dueTasks.map(t=>{
+        const done=!!S.taskDone[t.id];
+        return`<div class="row" onclick="switchPage('Maintenance');closeSheet('dayAgendaSheet')" style="cursor:pointer">
+          <div class="cb${done?' on':''}" onclick="toggleTask(${t.id},event)"></div>
+          <div class="row-icon" style="background:${t.color}">${t.icon}</div>
+          <div class="row-content${done?' done-text':''}">
+            <div class="row-title">${t.title}</div>
+            <div class="row-subtitle">${t.cat}</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>`;
+      }).join('')+`</div>`;
+  } else if(!appts.length){
+    daTasks.innerHTML=`<div class="da-empty">Nothing scheduled<br><span style="font-size:12px">Tap + Appt to add something</span></div>`;
+  } else {
+    daTasks.innerHTML='';
+  }
+
+  openSheet('dayAgendaSheet');
+}
+
+function addApptFromDay(){
+  closeSheet('dayAgendaSheet');
+  setTimeout(()=>{
+    openNewAppt();
+    // Pre-fill date after sheet opens
+    setTimeout(()=>{
+      const dateInput=document.getElementById('apptDate');
+      if(dateInput && window._daDate) dateInput.value=window._daDate;
+    },200);
+  },300);
+}
+
+// ═══════════════════════ END WEEK STRIP ═══════════════════════
 
 function buildTaskRow(task, compact){
   const div=document.createElement('div');
