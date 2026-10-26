@@ -578,7 +578,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 <!-- ═══════════════════════════════════ SEASONAL HUB SHEET ═══════════════════════════════════ -->
 <div class="sheet-backdrop" id="seasonHubSheet" onclick="sheetClose('seasonHubSheet',event)">
   <div class="sheet" style="max-height:94vh;padding:0;overflow:hidden;display:flex;flex-direction:column">
-    <div class="sheet-handle" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2"></div>
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <div style="width:44px"></div>
+      <span class="sheet-nav-title" id="shNavTitle">Seasonal Checklist</span>
+      <button class="sheet-btn" onclick="closeSheet('seasonHubSheet')">Done</button>
+    </div>
     <!-- Hero -->
     <div class="sh-hero" id="shHero">
       <div class="sh-hero-icon" id="shHeroIcon">🍂</div>
@@ -1680,7 +1685,42 @@ function switchRecordsTab(tab, el){
 // ══════════════════════════════════════════════════════
 // SHEETS
 // ══════════════════════════════════════════════════════
-function openSheet(id){document.getElementById(id).classList.add('open');}
+function openSheet(id){
+  const backdrop=document.getElementById(id);
+  backdrop.classList.add('open');
+  const sheet=backdrop.querySelector('.sheet');
+  if(sheet&&!sheet._swipeInit){
+    sheet._swipeInit=true;
+    let startY=0,startScrollTop=0,dragging=false;
+    const scrollEl=sheet.querySelector('[style*="overflow-y:auto"]')||sheet;
+    sheet.addEventListener('touchstart',e=>{
+      startY=e.touches[0].clientY;
+      startScrollTop=scrollEl.scrollTop;
+      dragging=false;
+    },{passive:true});
+    sheet.addEventListener('touchmove',e=>{
+      const dy=e.touches[0].clientY-startY;
+      // Only drag-to-dismiss if scrolled to top and pulling down
+      if(dy>0&&scrollEl.scrollTop<=0){
+        dragging=true;
+        sheet.style.transform=`translateY(${dy}px)`;
+        sheet.style.transition='none';
+      }
+    },{passive:true});
+    sheet.addEventListener('touchend',e=>{
+      if(!dragging){sheet.style.transform='';sheet.style.transition='';return;}
+      const dy=e.changedTouches[0].clientY-startY;
+      sheet.style.transition='transform .3s ease';
+      if(dy>80){
+        sheet.style.transform='translateY(100%)';
+        setTimeout(()=>{closeSheet(id);sheet.style.transform='';sheet.style.transition='';},300);
+      } else {
+        sheet.style.transform='';
+      }
+      dragging=false;
+    },{passive:true});
+  }
+}
 function closeSheet(id){document.getElementById(id).classList.remove('open');}
 function sheetClose(id,e){if(e.target===document.getElementById(id))closeSheet(id);}
 
@@ -2822,6 +2862,7 @@ function openSeasonHub(){
   hero.style.background = meta.gradient;
   document.getElementById('shHeroIcon').textContent = meta.icon;
   document.getElementById('shHeroTitle').textContent = meta.title;
+  document.getElementById('shNavTitle').textContent = meta.title;
 
   // Filter recs for this season + home profile
   const recs = SEASONAL_RECS.filter(r => {
