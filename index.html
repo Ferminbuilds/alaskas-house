@@ -270,10 +270,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .week-dot.today{background:var(--bg4);color:var(--label);font-weight:800;ring:.5px solid var(--label4)}
 
 /* ── SEASONAL BANNER ── */
-.season-banner{background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;margin:12px 16px 0;padding:14px 16px;color:#fff;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(217,119,6,.3)}
+.season-banner{background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;margin:12px 16px 0;padding:14px 16px;color:#fff;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(217,119,6,.3);cursor:pointer;transition:transform .15s,opacity .15s;-webkit-tap-highlight-color:transparent}
+.season-banner:active{transform:scale(.97);opacity:.9}
 .season-banner .icon{font-size:28px;flex-shrink:0}
+.season-banner .text{flex:1}
 .season-banner .text h4{font-size:15px;font-weight:700;letter-spacing:-.2px}
 .season-banner .text p{font-size:13px;opacity:.85;margin-top:2px;line-height:1.4}
+.season-banner .chevron{font-size:20px;opacity:.7;flex-shrink:0}
+/* ── SEASONAL HUB SHEET ── */
+.sh-hero{padding:20px 16px 16px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:0}
+.sh-hero-icon{font-size:40px;margin-bottom:8px}
+.sh-hero-title{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+.sh-hero-sub{font-size:14px;opacity:.85;line-height:1.4}
+.sh-cat-pill{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;background:var(--bg3);color:var(--label3);cursor:pointer;transition:all .15s;border:1.5px solid transparent;white-space:nowrap}
+.sh-cat-pill.active{background:rgba(0,122,255,.1);color:var(--blue);border-color:var(--blue)}
+.sh-rec-card{background:var(--bg2);border-radius:14px;margin:0 16px 10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.sh-rec-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px}
+.sh-rec-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sh-rec-body{flex:1;min-width:0}
+.sh-rec-title{font-size:15px;font-weight:600;letter-spacing:-.3px;color:var(--label)}
+.sh-rec-sub{font-size:13px;color:var(--label3);margin-top:3px;line-height:1.4}
+.sh-rec-footer{border-top:.5px solid var(--sep2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.sh-add-btn{background:rgba(0,122,255,.1);color:var(--blue);border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.sh-add-btn:active{opacity:.7;transform:scale(.96)}
+.sh-add-btn.added{background:rgba(52,199,89,.1);color:var(--green)}
+.sh-why{font-size:12px;color:var(--label4);font-style:italic}
 
 /* ── COST BAR ── */
 .cost-compare{padding:0 16px}
@@ -313,9 +334,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
   <div id="upcomingWidget" style="display:none" onclick="switchPage('MyHome')"></div>
 
   <!-- Seasonal banner -->
-  <div class="season-banner" id="seasonBanner">
+  <div class="season-banner" id="seasonBanner" onclick="openSeasonHub()">
     <div class="icon" id="seasonIcon">🍂</div>
-    <div class="text"><h4 id="seasonTitle">Fall Prep Time</h4><p id="seasonTip">Winterize sprinklers & clean gutters before the first freeze.</p></div>
+    <div class="text"><h4 id="seasonTitle">Fall Prep Time</h4><p id="seasonTip">Tap to see your personalized seasonal checklist ›</p></div>
+    <div class="chevron">›</div>
   </div>
 
   <!-- Stats row -->
@@ -491,6 +513,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
       <div class="row" onclick="exportData()"><div class="row-icon" style="background:rgba(52,199,89,.1)">💾</div><div class="row-content"><div class="row-title">Export Backup</div><div class="row-subtitle">Download all your data as a JSON file</div></div></div>
       <div class="row" onclick="importData()"><div class="row-icon" style="background:rgba(0,122,255,.1)">📥</div><div class="row-content"><div class="row-title">Restore from Backup</div><div class="row-subtitle">Import a previously exported JSON file</div></div></div>
       <div class="row" onclick="resetAllData()"><div class="row-icon" style="background:rgba(255,59,48,.1)">🗑️</div><div class="row-content"><div class="row-title" style="color:var(--red)">Reset All Data</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ SEASONAL HUB SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="seasonHubSheet" onclick="sheetClose('seasonHubSheet',event)">
+  <div class="sheet" style="max-height:94vh;padding:0;overflow:hidden;display:flex;flex-direction:column">
+    <div class="sheet-handle" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2"></div>
+    <!-- Hero -->
+    <div class="sh-hero" id="shHero">
+      <div class="sh-hero-icon" id="shHeroIcon">🍂</div>
+      <div class="sh-hero-title" id="shHeroTitle">Fall Checklist</div>
+      <div class="sh-hero-sub" id="shHeroSub">Personalized for your home</div>
+    </div>
+    <!-- Category filter pills -->
+    <div style="display:flex;gap:8px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;border-bottom:.5px solid var(--sep2)" id="shCatBar"></div>
+    <!-- Recommendations list -->
+    <div style="overflow-y:auto;flex:1;padding:12px 0 40px" id="shRecList"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ ADD SEASONAL TASK SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="addSeasonTaskSheet" onclick="sheetClose('addSeasonTaskSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('addSeasonTaskSheet')">Cancel</button>
+      <div class="sheet-title">Add to Tasks</div>
+      <button class="sheet-btn primary" onclick="confirmAddSeasonTask()">Add</button>
+    </div>
+    <div class="form-section">
+      <div class="form-label">Task Name</div>
+      <input class="form-input" id="astTitle" type="text" placeholder="Task name">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Category</div>
+      <input class="form-input" id="astCat" type="text" placeholder="Category" readonly style="color:var(--label3)">
+    </div>
+    <div class="form-section">
+      <div class="form-label">Notes / Why it matters</div>
+      <textarea class="form-textarea" id="astNotes" rows="3" placeholder="Optional notes…"></textarea>
+    </div>
+    <div class="form-section" style="margin-bottom:24px">
+      <button class="btn-primary" onclick="confirmAddSeasonTask()">Add to My Tasks</button>
     </div>
   </div>
 </div>
@@ -1005,7 +1071,7 @@ let S = {taskDone:{}, taskNotes:{}, projects:[], appointments:[], docs:[], homeN
 
 // ── Schema versioning ──────────────────────────────────
 const STORAGE_KEY = 'alaskaHouseV2';
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 function migrateData(data){
   const v = data.__schemaVersion || 1;
@@ -1013,6 +1079,7 @@ function migrateData(data){
   if(v < 2){ data.appointments = data.appointments || []; data.docs = data.docs || []; }
   // v2→v3: added rooms, appliances, schedules, budget, photos
   if(v < 3){ data.rooms = data.rooms || []; data.appliances = data.appliances || []; data.schedules = data.schedules || []; data.homeProfile = data.homeProfile || {}; }
+  if(v < 4){ data.seasonalTasks = data.seasonalTasks || []; data.seasonalAdded = data.seasonalAdded || []; }
   data.__schemaVersion = SCHEMA_VERSION;
   return data;
 }
@@ -1308,6 +1375,39 @@ function renderTasks(){
     groups[freq].forEach(t=>card.appendChild(buildTaskRow(t,false)));
     el.appendChild(sec);
   });
+  // Seasonal tasks added by user from the hub
+  const stasks = (S.seasonalTasks||[]).filter(t=>{
+    if(q && !t.title.toLowerCase().includes(q)) return false;
+    if(taskFreqFilter!=='all') return false; // show under All only
+    return true;
+  });
+  if(stasks.length){
+    const sec=document.createElement('div');
+    sec.className='section';sec.style.marginTop='12px';
+    sec.innerHTML=`<div class="section-header">My Seasonal Tasks</div><div class="card"></div>`;
+    const card=sec.querySelector('.card');
+    stasks.forEach(t=>{
+      const div=document.createElement('div');
+      div.className='row';
+      const done=!!t.done;
+      div.innerHTML=`
+        <div class="cb${done?' on':''}" onclick="toggleSeasonalTask('${t.id}',event)"></div>
+        <div class="row-icon" style="background:${t.color}">${t.icon}</div>
+        <div class="row-content${done?' done-text':''}">
+          <div class="row-title">${t.title}</div>
+          <div class="row-subtitle">${t.cat}</div>
+        </div>
+        <div class="row-right"><span class="tag orange">Seasonal</span></div>`;
+      card.appendChild(div);
+    });
+    el.appendChild(sec);
+  }
+}
+
+function toggleSeasonalTask(id,e){
+  if(e)e.stopPropagation();
+  const t=(S.seasonalTasks||[]).find(x=>x.id===id);
+  if(t){ t.done=!t.done; saveS(); renderTasks(); refreshHome(); }
 }
 
 function buildTaskRow(task, compact){
@@ -1953,6 +2053,217 @@ function openDocDetail(id){
 // ══════════════════════════════════════════════════════
 // PROFILE
 // ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// SEASONAL HUB
+// ══════════════════════════════════════════════════════
+
+// Seasonal recommendations database
+// Each rec: {id, title, why, icon, color, cat, seasons[], profile_filter(hp)}
+const SEASONAL_RECS = [
+  // ── HVAC ──
+  {id:'s1',title:'Service Your Furnace',why:'Pre-winter tune-up prevents mid-freeze breakdowns. Change filter, test ignition, check heat exchanger.',icon:'🌡️',color:'rgba(0,122,255,.1)',cat:'HVAC',seasons:['fall','winter'],profile_filter:hp=>['Gas Furnace','Electric Furnace','Boiler'].includes(hp.heating)},
+  {id:'s2',title:'Service Your Heat Pump',why:'Heat pumps work year-round — fall is the right time to have a tech inspect refrigerant and coils.',icon:'🔄',color:'rgba(0,122,255,.1)',cat:'HVAC',seasons:['fall','spring'],profile_filter:hp=>hp.heating==='Heat Pump'||hp.cooling==='Heat Pump'},
+  {id:'s3',title:'Schedule AC Tune-Up',why:'Get ahead of the summer rush. Clean coils, check refrigerant, test cooling before you need it.',icon:'❄️',color:'rgba(90,200,250,.1)',cat:'HVAC',seasons:['spring'],profile_filter:hp=>['Central AC','Heat Pump'].includes(hp.cooling)},
+  {id:'s4',title:'Clean Mini-Split Filters',why:'Mini-split filters collect dust fast. Rinse them monthly in season for peak efficiency.',icon:'🌬️',color:'rgba(0,122,255,.1)',cat:'HVAC',seasons:['spring','fall'],profile_filter:hp=>hp.heating==='Mini-Split'||hp.cooling==='Mini-Split'},
+  {id:'s5',title:'Replace HVAC Air Filter',why:'A clogged filter makes your system work harder and cuts air quality. Replace every 1–3 months.',icon:'🌬️',color:'rgba(0,122,255,.1)',cat:'HVAC',seasons:['fall','spring','winter','summer']},
+  // ── Exterior ──
+  {id:'s6',title:'Clean & Inspect Gutters',why:'Leaves and debris cause ice dams in winter. Clear gutters before the first hard freeze.',icon:'🍂',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['fall']},
+  {id:'s7',title:'Clean Gutters After Winter',why:'Spring melt loosens debris. Clear gutters before heavy spring rains arrive.',icon:'🌧️',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['spring']},
+  {id:'s8',title:'Inspect Roof After Winter',why:'Freeze-thaw cycles loosen flashing and shingles. Look for missing or curling shingles.',icon:'🏠',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['spring']},
+  {id:'s9',title:'Check Asphalt Shingles',why:'Granule loss, curling, or cracking means your roof is aging. Catch it before it leaks.',icon:'🏠',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['spring','fall'],profile_filter:hp=>hp.roof==='Asphalt Shingles'},
+  {id:'s10',title:'Inspect Metal Roof Fasteners',why:'Metal roof screws back out over time. Check for loose fasteners and re-seal any penetrations.',icon:'🏠',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['spring'],profile_filter:hp=>hp.roof==='Metal'},
+  {id:'s11',title:'Inspect Flat Roof Membrane',why:'Flat/TPO roofs are prone to standing water and seam separation. Inspect after winter.',icon:'🏠',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['spring'],profile_filter:hp=>hp.roof==='Flat/TPO'},
+  {id:'s12',title:'Seal Exterior Cracks & Gaps',why:'Cold air infiltrates through gaps around windows, doors, and utility penetrations. Caulk before winter.',icon:'🔧',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['fall']},
+  {id:'s13',title:'Inspect & Reseal Driveway',why:'Water expands cracks over winter. Seal before the freeze to prevent bigger damage.',icon:'🛣️',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['fall']},
+  {id:'s14',title:'Inspect Deck or Patio',why:'Wood decks need annual inspection for rot, loose boards, and popped nails before outdoor season.',icon:'🪵',color:'rgba(52,199,89,.1)',cat:'Exterior',seasons:['spring']},
+  // ── Plumbing ──
+  {id:'s15',title:'Winterize Outdoor Faucets',why:'Outdoor hose bibs left connected in freezing temps can burst your pipes. Drain and shut off before first freeze.',icon:'❄️',color:'rgba(90,200,250,.1)',cat:'Plumbing',seasons:['fall']},
+  {id:'s16',title:'Drain & Winterize Irrigation',why:'Any water left in irrigation lines will freeze and crack pipes. Blow out the system before temps drop.',icon:'💧',color:'rgba(90,200,250,.1)',cat:'Plumbing',seasons:['fall']},
+  {id:'s17',title:'Flush Water Heater',why:'Sediment buildup reduces efficiency and shortens heater life. Flush annually.',icon:'🔥',color:'rgba(255,59,48,.1)',cat:'Plumbing',seasons:['fall','spring']},
+  {id:'s18',title:'Inspect Tankless Water Heater',why:'Scale builds up in tankless units. Descale annually to maintain flow rate and efficiency.',icon:'💧',color:'rgba(90,200,250,.1)',cat:'Plumbing',seasons:['fall'],profile_filter:hp=>['Tankless Gas','Tankless Electric'].includes(hp.water)},
+  {id:'s19',title:'Check Heat Pump Water Heater',why:'Heat pump water heaters need clear airflow. Clean the filter and check the condensate drain.',icon:'💧',color:'rgba(90,200,250,.1)',cat:'Plumbing',seasons:['spring'],profile_filter:hp=>hp.water==='Heat Pump'},
+  {id:'s20',title:'Check Sump Pump Before Spring',why:'Spring melt is the highest-risk time for basement flooding. Test your sump pump now.',icon:'💦',color:'rgba(90,200,250,.1)',cat:'Plumbing',seasons:['spring']},
+  // ── Safety ──
+  {id:'s21',title:'Test Smoke & CO Detectors',why:'Test monthly, replace batteries twice a year. The start of each season is a good trigger.',icon:'🔥',color:'rgba(255,59,48,.1)',cat:'Safety',seasons:['fall','spring']},
+  {id:'s22',title:'Check Fire Extinguishers',why:'Confirm gauge is in the green and unit is accessible. Replace if over 12 years old.',icon:'🧯',color:'rgba(255,59,48,.1)',cat:'Safety',seasons:['fall']},
+  {id:'s23',title:'Stock Emergency Winter Kit',why:'Ice storms and power outages are common in winter. Keep blankets, flashlights, food, and water on hand.',icon:'🧰',color:'rgba(255,59,48,.1)',cat:'Safety',seasons:['fall']},
+  {id:'s24',title:'Pest Inspection',why:'Rodents and insects move indoors as temps drop. Inspect entry points and set traps or schedule a pro.',icon:'🐛',color:'rgba(255,59,48,.1)',cat:'Safety',seasons:['fall']},
+  {id:'s25',title:'Check for Pest Activity',why:'Spring is prime pest season. Look for signs of termites, rodents, or ants before infestations grow.',icon:'🐜',color:'rgba(255,59,48,.1)',cat:'Safety',seasons:['spring']},
+  // ── Yard ──
+  {id:'s26',title:'Clean & Store Outdoor Furniture',why:'UV and moisture damage furniture left out over winter. Clean, cover, or store before first frost.',icon:'🪑',color:'rgba(52,199,89,.1)',cat:'Yard',seasons:['fall']},
+  {id:'s27',title:'Drain & Store Garden Hoses',why:'Water left in hoses freezes and cracks the rubber. Drain, coil, and bring inside.',icon:'🌿',color:'rgba(52,199,89,.1)',cat:'Yard',seasons:['fall']},
+  {id:'s28',title:'Trim Trees Away from House',why:'Overhanging branches drop on the roof during winter storms. Trim now before snow adds weight.',icon:'🌳',color:'rgba(52,199,89,.1)',cat:'Yard',seasons:['fall']},
+  {id:'s29',title:'Aerate & Fertilize Lawn',why:'Aeration lets nutrients reach grass roots. Fall and spring are ideal windows.',icon:'🌱',color:'rgba(52,199,89,.1)',cat:'Yard',seasons:['fall','spring']},
+  {id:'s30',title:'Service Lawn Mower',why:'Sharpen blades, change oil, and replace spark plugs before mowing season starts.',icon:'🌿',color:'rgba(52,199,89,.1)',cat:'Yard',seasons:['spring']},
+  // ── Structural ──
+  {id:'s31',title:'Chimney Inspection & Cleaning',why:'Creosote buildup is a fire hazard. Get it inspected and swept before first fire of the season.',icon:'🏚️',color:'rgba(134,97,67,.1)',cat:'Structural',seasons:['fall']},
+  {id:'s32',title:'Inspect Attic for Leaks or Pests',why:'After winter, check for water stains, daylight gaps, or pest signs before summer heat traps odors.',icon:'🔦',color:'rgba(134,97,67,.1)',cat:'Structural',seasons:['spring']},
+  {id:'s33',title:'Check Weatherstripping',why:'Worn weatherstripping lets cold air in and heat out. Replace around doors before winter.',icon:'🚪',color:'rgba(52,199,89,.1)',cat:'Structural',seasons:['fall']},
+  // ── Garage ──
+  {id:'s34',title:'Test Garage Door Safety Reverse',why:'Place a 2x4 on the ground — the door should auto-reverse when it hits it. Test before winter.',icon:'🚗',color:'rgba(255,149,0,.1)',cat:'Garage',seasons:['fall'],profile_filter:hp=>hp.garage&&hp.garage!=='None'&&hp.garage!=='Carport'},
+  {id:'s35',title:'Lubricate Garage Door Rollers',why:'Cold weather thickens old grease and makes doors strain. Lubricate hinges, rollers, and springs.',icon:'🔧',color:'rgba(255,149,0,.1)',cat:'Garage',seasons:['fall'],profile_filter:hp=>hp.garage&&hp.garage!=='None'&&hp.garage!=='Carport'},
+];
+
+// Which season are we in?
+function getCurrentSeason(){
+  const m = new Date().getMonth();
+  if(m>=2&&m<=4) return 'spring';
+  if(m>=5&&m<=7) return 'summer';
+  if(m>=8&&m<=10) return 'fall';
+  return 'winter';
+}
+
+function getSeasonMeta(){
+  const s = getCurrentSeason();
+  const meta = {
+    spring:{icon:'🌸',title:'Spring Checklist',gradient:'linear-gradient(135deg,#34d399,#059669)',glow:'rgba(52,199,89,.3)',sub:'Time to open up the house and prep for warmer months.'},
+    summer:{icon:'☀️',title:'Summer Checklist',gradient:'linear-gradient(135deg,#fbbf24,#d97706)',glow:'rgba(251,191,36,.3)',sub:'Keep cool and stay ahead of summer wear.'},
+    fall:{icon:'🍂',title:'Fall Checklist',gradient:'linear-gradient(135deg,#f59e0b,#d97706)',glow:'rgba(217,119,6,.3)',sub:'Winterize, inspect, and button up before the freeze.'},
+    winter:{icon:'❄️',title:'Winter Checklist',gradient:'linear-gradient(135deg,#60a5fa,#3b82f6)',glow:'rgba(59,130,246,.3)',sub:'Keep systems running and pipes from freezing.'},
+  };
+  return {...meta[s], season:s};
+}
+
+let _shActiveCat = 'All';
+
+function openSeasonHub(){
+  const hp = S.homeProfile || {};
+  const season = getCurrentSeason();
+  const meta = getSeasonMeta();
+
+  // Update hero
+  const hero = document.getElementById('shHero');
+  hero.style.background = meta.gradient;
+  document.getElementById('shHeroIcon').textContent = meta.icon;
+  document.getElementById('shHeroTitle').textContent = meta.title;
+
+  // Filter recs for this season + home profile
+  const recs = SEASONAL_RECS.filter(r => {
+    if(!r.seasons.includes(season)) return false;
+    if(r.profile_filter && Object.keys(hp).length > 0){
+      return r.profile_filter(hp);
+    }
+    // If home profile not set up, show recs with no filter or generic ones
+    return !r.profile_filter;
+  });
+
+  // Count by cat
+  const cats = ['All', ...new Set(recs.map(r=>r.cat))];
+  _shActiveCat = 'All';
+
+  // Build profile context line
+  const profileParts = [];
+  if(hp.homeType) profileParts.push(hp.homeType);
+  if(hp.heating) profileParts.push(hp.heating);
+  if(hp.cooling) profileParts.push(hp.cooling);
+  const profLine = profileParts.length > 0
+    ? `${recs.length} recommendations for your ${profileParts.join(' · ')}`
+    : `${recs.length} seasonal recommendations — set up your home profile for personalized tips`;
+  document.getElementById('shHeroSub').textContent = profLine;
+
+  // Build category pills
+  const bar = document.getElementById('shCatBar');
+  bar.innerHTML = cats.map(c =>
+    `<div class="sh-cat-pill${c==='All'?' active':''}" onclick="setShCat('${c}')">${c==='All'?'All ('+recs.length+')':c}</div>`
+  ).join('');
+
+  // Store recs for re-render
+  bar._recs = recs;
+
+  renderShRecs(recs, 'All');
+  openSheet('seasonHubSheet');
+}
+
+function setShCat(cat){
+  _shActiveCat = cat;
+  const bar = document.getElementById('shCatBar');
+  bar.querySelectorAll('.sh-cat-pill').forEach(p => p.classList.toggle('active', p.textContent.startsWith(cat)));
+  renderShRecs(bar._recs, cat);
+}
+
+function renderShRecs(recs, cat){
+  const list = document.getElementById('shRecList');
+  const filtered = cat==='All' ? recs : recs.filter(r=>r.cat===cat);
+
+  if(!filtered.length){
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">All caught up!</div><div class="empty-sub">No recommendations for this category right now.</div></div>`;
+    return;
+  }
+
+  // Check which are already in tasks
+  const taskTitles = new Set(TASKS.map(t=>t.title.toLowerCase()));
+  const addedIds = new Set(S.seasonalAdded||[]);
+
+  list.innerHTML = filtered.map(r => {
+    const alreadyInTasks = taskTitles.has(r.title.toLowerCase());
+    const alreadyAdded = addedIds.has(r.id);
+    const isDone = alreadyInTasks || alreadyAdded;
+    return `<div class="sh-rec-card">
+      <div class="sh-rec-row">
+        <div class="sh-rec-icon" style="background:${r.color}">${r.icon}</div>
+        <div class="sh-rec-body">
+          <div class="sh-rec-title">${r.title}</div>
+          <div class="sh-rec-sub">${r.why}</div>
+        </div>
+      </div>
+      <div class="sh-rec-footer">
+        <span class="sh-why">${r.cat}</span>
+        ${isDone
+          ? `<span class="sh-add-btn added">✓ On my list</span>`
+          : `<button class="sh-add-btn" onclick="openAddSeasonTask('${r.id}')">+ Add to Tasks</button>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let _pendingSeasonRec = null;
+
+function openAddSeasonTask(recId){
+  const rec = SEASONAL_RECS.find(r=>r.id===recId);
+  if(!rec) return;
+  _pendingSeasonRec = rec;
+  document.getElementById('astTitle').value = rec.title;
+  document.getElementById('astCat').value = rec.cat;
+  document.getElementById('astNotes').value = rec.why;
+  openSheet('addSeasonTaskSheet');
+}
+
+function confirmAddSeasonTask(){
+  if(!_pendingSeasonRec) return;
+  const title = document.getElementById('astTitle').value.trim() || _pendingSeasonRec.title;
+  const notes = document.getElementById('astNotes').value.trim();
+
+  // Add as a custom task to S.customTasks (we'll store user-added seasonal tasks separately)
+  if(!S.seasonalAdded) S.seasonalAdded = [];
+  if(!S.seasonalTasks) S.seasonalTasks = [];
+
+  const newTask = {
+    id: 'st_'+Date.now(),
+    title,
+    notes,
+    cat: _pendingSeasonRec.cat,
+    icon: _pendingSeasonRec.icon,
+    color: _pendingSeasonRec.color,
+    addedAt: new Date().toISOString(),
+    done: false,
+    sourceId: _pendingSeasonRec.id
+  };
+
+  S.seasonalTasks.push(newTask);
+  S.seasonalAdded.push(_pendingSeasonRec.id);
+  saveS();
+
+  _pendingSeasonRec = null;
+  closeSheet('addSeasonTaskSheet');
+
+  // Re-render hub to show "✓ On my list"
+  const bar = document.getElementById('shCatBar');
+  if(bar._recs) renderShRecs(bar._recs, _shActiveCat);
+
+  showToast(`"${title}" added to Tasks ✓`);
+}
+
 function refreshProfile(){
   const spent=S.projects.reduce((s,p)=>s+(parseFloat(p.actCost)||0),0);
   document.getElementById('totalSpentYear').textContent='$'+Math.round(spent).toLocaleString();
