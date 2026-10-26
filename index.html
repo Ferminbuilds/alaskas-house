@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Alaska's House">
@@ -30,7 +30,7 @@
     --shadow: 0 1px 4px rgba(0,0,0,0.3);
   }
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 html,body{height:100%;overflow:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--label);overscroll-behavior:none}
 @media (hover:hover) and (pointer:fine){
@@ -303,7 +303,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
     <h2>🏡 Alaska's House</h2>
     <p id="heroSub">Your home at a glance</p>
     <div class="hero-stats">
-      <div class="hero-stat"><div class="hero-stat-num" id="hsDue">0</div><div class="hero-stat-label">Due</div></div>
+      <div class="hero-stat" onclick="openDueSheet()" style="cursor:pointer"><div class="hero-stat-num" id="hsDue">0</div><div class="hero-stat-label">Due ›</div></div>
       <div class="hero-stat"><div class="hero-stat-num" id="hsProj">0</div><div class="hero-stat-label">Active</div></div>
       <div class="hero-stat"><div class="hero-stat-num" id="hsSpent">$0</div><div class="hero-stat-label">Spent</div></div>
     </div>
@@ -767,6 +767,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
   </div>
 </div>
 
+<!-- ═══════════════════════════════════ DUE TASKS SHEET ═══════════════════════════════════ -->
+<div class="sheet-backdrop" id="dueTasksSheet" onclick="sheetClose('dueTasksSheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-nav">
+      <button class="sheet-btn" onclick="closeSheet('dueTasksSheet')">Close</button>
+      <div class="sheet-title">Due Tasks</div>
+      <button class="sheet-btn primary" onclick="closeSheet('dueTasksSheet');switchPage('Tasks')">See All</button>
+    </div>
+    <div style="padding:8px 0 24px">
+      <div id="dueTasksList"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════ PROJECT DETAIL SHEET ═══════════════════════════════════ -->
 <div class="sheet-backdrop" id="projDetailSheet" onclick="sheetClose('projDetailSheet',event)">
   <div class="sheet">
@@ -1121,6 +1136,53 @@ function refreshHome(){
   } else {
     actProj.forEach(p=>ap.appendChild(buildProjCard(p)));
   }
+}
+
+function openDueSheet(){
+  const due = TASKS.filter(t=>!S.taskDone[t.id]);
+  const el = document.getElementById('dueTasksList');
+  el.innerHTML = '';
+  if(!due.length){
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-title">All caught up!</div><div class="empty-sub">No tasks are currently due.</div></div>`;
+    openSheet('dueTasksSheet');
+    return;
+  }
+  // Group by frequency
+  const groups = {};
+  due.forEach(t => {
+    if(!groups[t.freq]) groups[t.freq] = [];
+    groups[t.freq].push(t);
+  });
+  const freqOrder = ['Monthly','Quarterly','Biannual','Annual','As Needed'];
+  freqOrder.forEach(freq => {
+    if(!groups[freq]) return;
+    const sec = document.createElement('div');
+    sec.className = 'section';
+    sec.style.marginTop = '8px';
+    sec.innerHTML = `<div class="section-header">${freq}</div>`;
+    const card = document.createElement('div');
+    card.className = 'card';
+    groups[freq].forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.borderTop = i > 0 ? '.5px solid var(--sep2)' : '';
+      row.innerHTML = `
+        <div class="row-icon" style="background:rgba(255,149,0,.1);font-size:18px">${t.icon||'🔧'}</div>
+        <div class="row-content">
+          <div class="row-title">${t.name}</div>
+          <div class="row-subtitle">${t.cat} · ${t.freq}</div>
+        </div>
+        <div style="font-size:20px;color:var(--label4)">›</div>`;
+      row.addEventListener('click', () => {
+        closeSheet('dueTasksSheet');
+        setTimeout(() => { switchPage('Tasks'); openTask(t.id); }, 300);
+      });
+      card.appendChild(row);
+    });
+    sec.appendChild(card);
+    el.appendChild(sec);
+  });
+  openSheet('dueTasksSheet');
 }
 
 // ══════════════════════════════════════════════════════
